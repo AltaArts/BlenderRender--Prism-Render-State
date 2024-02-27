@@ -42,6 +42,7 @@ import shutil
 import logging
 import operator
 import tempfile
+import math
 
 import bpy
 
@@ -226,11 +227,20 @@ class Prism_Blender_Functions(object):
 
     @err_catcher(name=__name__)
     def getFPS(self, origin):
-        return bpy.context.scene.render.fps
 
+        intFps = bpy.context.scene.render.fps
+        baseFps = bpy.context.scene.render.fps_base
+        return round(intFps / baseFps, 2)
+    
     @err_catcher(name=__name__)
     def setFPS(self, origin, fps):
-        bpy.context.scene.render.fps = int(fps)
+
+        if isinstance(fps, int):                        #   EDITED to fix FPS check
+            bpy.context.scene.render.fps = fps          #   EDITED
+        else:
+            intFps = math.ceil(fps)
+            bpy.context.scene.render.fps = intFps
+            bpy.context.scene.render.fps_base = intFps/fps
 
     @err_catcher(name=__name__)
     def getResolution(self):
@@ -319,7 +329,6 @@ class Prism_Blender_Functions(object):
             bpy.context.scene.objects.active = obj
         else:
             curlayer = bpy.context.window_manager.windows[0].view_layer
-
             if obj not in list(curlayer.objects):
                 obj_layer = None
                 for vlayer in list(bpy.context.scene.view_layers):
@@ -623,7 +632,7 @@ class Prism_Blender_Functions(object):
         return outputName
 
     @err_catcher(name=__name__)
-    def exportUsd(self, outputName, origin, startFrame, endFrame, expNodes):
+    def exportUsd(self, outputName, origin, startFrame, endFrame, expNodes, catchError=True):
         from _bpy import ops as _ops_module
         try:
             _ops_module.as_string("WM_OT_usd_export")
@@ -634,20 +643,27 @@ class Prism_Blender_Functions(object):
             return False
 
         self.setFrameRange(origin, startFrame, endFrame)
-        if bpy.app.version < (4, 0, 0):
-            bpy.ops.wm.usd_export(
-                self.getOverrideContext(origin),
-                filepath=outputName,
-                export_animation=startFrame != endFrame,
-                selected_objects_only=(not origin.chb_wholeScene.isChecked()),
-            )
-        else:
-            with bpy.context.temp_override(**self.getOverrideContext(origin)):
+        try:
+            if bpy.app.version < (4, 0, 0):
                 bpy.ops.wm.usd_export(
+                    self.getOverrideContext(origin),
                     filepath=outputName,
                     export_animation=startFrame != endFrame,
                     selected_objects_only=(not origin.chb_wholeScene.isChecked()),
                 )
+            else:
+                with bpy.context.temp_override(**self.getOverrideContext(origin)):
+                    bpy.ops.wm.usd_export(
+                        filepath=outputName,
+                        export_animation=startFrame != endFrame,
+                        selected_objects_only=(not origin.chb_wholeScene.isChecked()),
+                    )
+        except:
+            if catchError:
+                return False
+            else:
+                raise
+
         return outputName
 
     @err_catcher(name=__name__)
@@ -685,8 +701,9 @@ class Prism_Blender_Functions(object):
         if bpy.app.version < (4, 0, 0):
             bpy.ops.object.select_all(ctx, action="DESELECT")
         else:
-            with bpy.context.temp_override(**ctx):
-                bpy.ops.object.select_all(action="DESELECT")
+            if ext != ".blend":
+                with bpy.context.temp_override(**ctx):
+                    bpy.ops.object.select_all(action="DESELECT")
 
         return outputName
 
@@ -726,6 +743,12 @@ class Prism_Blender_Functions(object):
 
             for area in screen.areas:
                 if area.type == "IMAGE_EDITOR":
+                    ctx["area"] = area
+                    ctx["region"] = None
+                    return ctx
+
+            for area in screen.areas:
+                if area.type == "NODE_EDITOR":
                     ctx["area"] = area
                     ctx["region"] = None
                     return ctx
@@ -770,15 +793,11 @@ class Prism_Blender_Functions(object):
     def sm_render_refreshPasses(self, origin):
         origin.lw_passes.clear()
 
-        passNames = self.getNodeAOVs()                              #   Looks to see if there are layers first
-
+        passNames = self.getNodeAOVs()
         logger.debug("node aovs: %s" % passNames)
-
-        origin.b_addPasses.setVisible(True)                              #   Made True vvvvvvvvvv
-#        origin.b_addPasses.setVisible(not passNames)                   #   COMMENTED OUT 12/12/23
-
+        origin.b_addPasses.setVisible(not passNames)
         self.plugin.canDeleteRenderPasses = bool(not passNames)
-        if not passNames:                                               #   If no layers, goes to passes
+        if not passNames:
             passNames = self.getViewLayerAOVs()
             logger.debug("viewlayer aovs: %s" % passNames)
 
@@ -787,7 +806,6 @@ class Prism_Blender_Functions(object):
 
     @err_catcher(name=__name__)
     def getNodeAOVs(self):
-
         if bpy.context.scene.node_tree is None or not bpy.context.scene.use_nodes:
             return
 
@@ -810,7 +828,7 @@ class Prism_Blender_Functions(object):
                 passName = i.from_socket.name
 
                 if passName == "Image":
-                    passName = "beauty"                             #   TODO
+                    passName = "beauty"
 
                 if i.from_node.type == "R_LAYERS":
                     if len(rlayerNodes) > 1:
@@ -900,7 +918,7 @@ class Prism_Blender_Functions(object):
                                 layerName = links[0].from_socket.node.layer
 
                                 if passName == "Image":
-                                    passName = "beauty"                     #   TODO
+                                    passName = "beauty"
 
                                 if (
                                     passName == aovName.split("_", 1)[1]
@@ -927,6 +945,7 @@ class Prism_Blender_Functions(object):
             obj = getattr(obj, a)
 
         setattr(obj, attrs[-1], enable)
+
 
 
 
@@ -985,7 +1004,9 @@ class Prism_Blender_Functions(object):
     
 
     @err_catcher(name=__name__)                                 #   ADDED
-    def setTempScene(self, rSettings):    
+    def setTempScene(self, rSettings, origin):    
+
+        bpy.context.scene.render.resolution_percentage = int(origin.cb_scaling.currentText())
 
         compEnabled = rSettings["useComp"]
         self.useCompositor(command="Set", useComp=compEnabled)
@@ -1098,6 +1119,7 @@ class Prism_Blender_Functions(object):
     
 
 
+
     @err_catcher(name=__name__)
     def sm_render_preSubmit(self, origin, rSettings):
         if origin.chb_resOverride.isChecked():
@@ -1108,7 +1130,7 @@ class Prism_Blender_Functions(object):
 
         nodeAOVs = self.getNodeAOVs()
         imgFormat = origin.cb_format.currentText()
-        if imgFormat in [".exr", ".exrMulti"]:                                  #   EDITED
+        if imgFormat in [".exr", ".exrMulti"]:                                          #   EDITED
             if not nodeAOVs and self.getViewLayerAOVs():
                 fileFormat = "OPEN_EXR_MULTILAYER"
             else:
@@ -1127,9 +1149,9 @@ class Prism_Blender_Functions(object):
 
 
 
+
 #################################################################################
 #    vvvvvvvvvvvvvvvvvvvvv           ADDED         vvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-        
 
         rSettings["origSamples"] = bpy.context.scene.cycles.samples
         rSettings["origImageformat"] = bpy.context.scene.render.image_settings.file_format
@@ -1141,7 +1163,7 @@ class Prism_Blender_Functions(object):
         rSettings["origUseNode"] = bpy.context.scene.use_nodes
 
 
-        self.setTempScene(rSettings)    
+        self.setTempScene(rSettings, origin)    
 
 
 
@@ -1169,7 +1191,7 @@ class Prism_Blender_Functions(object):
         bpy.context.scene.render.image_settings.file_format = fileFormat
         bpy.context.scene.render.use_overwrite = True
         bpy.context.scene.render.use_file_extension = False
-        bpy.context.scene.render.resolution_percentage = 100
+        # bpy.context.scene.render.resolution_percentage = 100                      #   COMMENTED OUT FOR TEMP SCENE
         bpy.context.scene.camera = bpy.context.scene.objects[origin.curCam]
 
         usePasses = False
@@ -1280,10 +1302,15 @@ class Prism_Blender_Functions(object):
                     ctx.pop("area")
 
 
+
+
 #################################################################################
 #    vvvvvvvvvvvvvvvvvvvvv           ADDED         vvvvvvvvvvvvvvvvvvvvvvvvvvvvvv           #   NEEDED???
 
             #   Adds modified scene options to ctx context for local render.
+
+            if not origin.chb_resOverride.isChecked():
+                ctx['scene'].render.resolution_percentage = int(origin.cb_scaling.currentText())
 
             ctx['scene'].cycles.samples = int(rSettings["renderSamples"])
             ctx['scene'].render.use_persistent_data = (rSettings["persData"])
@@ -1330,6 +1357,9 @@ class Prism_Blender_Functions(object):
 
 
 
+
+
+
             if rSettings["startFrame"] is None:
                 frameChunks = [[x, x] for x in rSettings["frames"]]
             else:
@@ -1342,28 +1372,32 @@ class Prism_Blender_Functions(object):
                 bpy.context.scene.frame_start = frameChunk[0]
                 bpy.context.scene.frame_end = frameChunk[1]
                 singleFrame = rSettings["rangeType"] == "Single Frame"
-
                 if bpy.app.version < (4, 0, 0):
+
                     self.nextRenderslot()                           #   ADDED
+
 
                     bpy.ops.render.render(
                         ctx,
                         "INVOKE_DEFAULT",
                         animation=not singleFrame,
                         write_still=singleFrame,
-
                     )
-
                 else:
                     with bpy.context.temp_override(**ctx):
+
                         self.nextRenderslot()                           #   ADDED
+
 
                         bpy.ops.render.render(
                             "INVOKE_DEFAULT",
                             animation=not singleFrame,
                             write_still=singleFrame,
                         )
-               
+                
+                    #   I WANT TO WAIT FOR THE SAVE TO FINISH HERE BEFORE GOING TO NEXT FRAME CHUNK
+
+
                 origin.renderingStarted = True
                 origin.LastRSettings = rSettings
 
@@ -1371,12 +1405,11 @@ class Prism_Blender_Functions(object):
                 self.renderedChunks.append(frameChunk)
 
                 return "publish paused"
-            
+
             origin.renderingStarted = False
 
             if hasattr(origin, "waitmsg") and origin.waitmsg.isVisible():
                 origin.waitmsg.close()
-
 
             if len(os.listdir(os.path.dirname(outputName))) > 0:
                 return "Result=Success"
@@ -1395,7 +1428,6 @@ class Prism_Blender_Functions(object):
             )
             self.core.writeErrorLog(erStr)
             return "Execute Canceled: unknown error (view console for more information)"
-
 
     @err_catcher(name=__name__)
     def CheckRenderFinished(self, origin):
@@ -1450,6 +1482,8 @@ class Prism_Blender_Functions(object):
 
 
 
+
+
 #################################################################################
 #    vvvvvvvvvvvvvvvvvvvvv           ADDED         vvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
@@ -1484,6 +1518,8 @@ class Prism_Blender_Functions(object):
 
 #    ^^^^^^^^^^^^^^^^^^^^^          ADDED       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #####################################################################################
+
+
 
 
 
