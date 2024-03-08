@@ -1,6 +1,6 @@
 # BlenderRender--Prism-Render-State
 
-WIP
+*** WIP ***
 
 Will eventually finish converting to a proper plugin.
 
