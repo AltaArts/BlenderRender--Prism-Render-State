@@ -30,14 +30,22 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Prism.  If not, see <https://www.gnu.org/licenses/>.
-
+####################################################
+#
+#           BlenderRender State Plugin for Prism2
+#
+#                 Joshua Breckeen
+#                    Alta Arts
+#                josh@alta-arts.com
+#
+####################################################
 
 import os
 
 
 class Prism_BlenderRender_Variables(object):
     def __init__(self, core, plugin):
-        self.version = "v2.0.3-0.4 beta"
+        self.version = "v2.0.3-0.5 beta"
         self.pluginName = "BlenderRender"
         self.pluginType = "Custom"
         self.platforms = ["Windows", "Linux", "Darwin"]

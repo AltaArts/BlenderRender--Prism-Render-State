@@ -30,15 +30,21 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Prism.  If not, see <https://www.gnu.org/licenses/>.
-
+####################################################
+#
+#           BlenderRender State Plugin for Prism2
+#
+#                 Joshua Breckeen
+#                    Alta Arts
+#                josh@alta-arts.com
+#
+####################################################
 
 import os
 import sys
 import platform
 import time
 import traceback
-
-
 
 try:
     from PySide2.QtCore import *
@@ -57,19 +63,6 @@ class Prism_BlenderRender_Functions(object):
     def __init__(self, core, plugin):
         self.core = core
         self.plugin = plugin
-
-
-        # # check if Blender plugin is loaded
-        # blendPlugin = self.core.getPlugin("Blender")
-        # if blendPlugin:
-        #     # if yes, patch the function
-        #     self.applyBlendPatch(blendPlugin)
-
-        # register callback in case plugin will be loaded later on
-        # self.core.registerCallback("pluginLoaded",
-        #                            self.onPluginLoaded,
-        #                            plugin=self
-        #                            )
 
         self.core.registerCallback("onStateManagerOpen", self.onStateManagerOpen, plugin=self)
 

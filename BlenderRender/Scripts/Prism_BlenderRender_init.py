@@ -30,7 +30,15 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Prism.  If not, see <https://www.gnu.org/licenses/>.
-
+####################################################
+#
+#           BlenderRender State Plugin for Prism2
+#
+#                 Joshua Breckeen
+#                    Alta Arts
+#                josh@alta-arts.com
+#
+####################################################
 
 from Prism_BlenderRender_Variables import Prism_BlenderRender_Variables
 from Prism_BlenderRender_Functions import Prism_BlenderRender_Functions

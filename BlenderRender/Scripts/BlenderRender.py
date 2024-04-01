@@ -30,14 +30,20 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Prism.  If not, see <https://www.gnu.org/licenses/>.
-
+####################################################
+#
+#           BlenderRender State Plugin for Prism2
+#
+#                 Joshua Breckeen
+#                    Alta Arts
+#                josh@alta-arts.com
+#
+####################################################
 
 import os
 import sys
 import time
 import platform
-import shutil
-import re
 
 from qtpy.QtCore import *
 from qtpy.QtGui import *
@@ -64,7 +70,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         self.customContext = None
         self.allowCustomContext = False
 
-        self.setupUi(self)                                  #   ADDED
+        self.setupUi(self)
 
         self.cb_context.addItems(["From scenefile", "Custom"])              
 
@@ -78,26 +84,26 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
             "Scene",
             "Shot",
             "Single Frame",
-            "FML",                                              #   ADDED
-            "FMMML",                                            #   ADDED
+            "FML",
+            "FMMML",
             "Custom",
             "Expression",
-        ]
+            ]
         
         self.cb_rangeType.addItems(self.rangeTypes)
         for idx, rtype in enumerate(self.rangeTypes):
             self.cb_rangeType.setItemData(
                 idx, self.stateManager.getFrameRangeTypeToolTip(rtype), Qt.ToolTipRole
-            )
+                )
         self.w_frameExpression.setToolTip(
             self.stateManager.getFrameRangeTypeToolTip("ExpressionField")
-        )
+            )
 
         self.renderPresets = (
             self.stateManager.stateTypes["RenderSettings"].getPresets(self.core)
             if "RenderSettings" in self.stateManager.stateTypes
             else {}
-        )
+            )
         if self.renderPresets:
             self.cb_renderPreset.addItems(self.renderPresets.keys())
         else:
@@ -117,7 +123,6 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         if len(self.product_paths) < 2:
             self.cb_outPath.setVisible(False)
             self.l_outPath.setVisible(False)
-            # self.w_outPath.setVisible(False)                      #   Edited hiding of entire layout box.
 
         self.mediaType = "3drenders"
         self.tasknameRequired = True
@@ -129,30 +134,30 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
                 "compressWidget": self.cb_exrCodec,
                 "compressLabel": "Codec: ",
                 "alpha": True,
-            },
+                },
             ".exrMulti": {
                 "bitDepths": ["16", "32"],
                 "codec": ["None", "Zip", "ZipS", "DWAA", "DWAB"],
                 "compressWidget": self.cb_exrCodec,
                 "compressLabel": "Codec: ",
                 "alpha": True,
-            },
+                },
             ".png": {
                 "bitDepths": ["8", "16"],
                 "compressWidget": self.sp_pngCompress,
                 "compressLabel": "Compression %: ",
                 "alpha": True,
-            },
+                },
             ".jpg": {
                 "compressWidget": self.sp_jpegQual,
                 "compressLabel": "Quality %: ",
                 "alpha": False,
-            },
-        }
+                },
+            }
 
         self.cb_format.addItems(self.formatOptions.keys())
 
-        self.scalings = [                                           #   ADDED
+        self.scalings = [
             "25",
             "50",
             "75",
@@ -160,10 +165,10 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
             "125",
             "150",
             "200"
-        ]
-        self.cb_scaling.addItems(self.scalings)                     #   ADDED
-        tempIdx = self.cb_scaling.findText("100")                   #   ADDED
-        self.cb_scaling.setCurrentIndex(tempIdx)                    #   ADDED
+            ]
+        self.cb_scaling.addItems(self.scalings)
+        tempIdx = self.cb_scaling.findText("100")
+        self.cb_scaling.setCurrentIndex(tempIdx)
 
         self.resolutionPresets = self.core.projects.getResolutionPresets()
         if "Get from rendersettings" not in self.resolutionPresets:
@@ -186,102 +191,91 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         if self.cb_manager.count() == 0:
             self.gb_submit.setVisible(False)
 
-        self.rezScaleCalc("load")                                               #   ADDED
-
         self.getRenderLayers()               
 
         self.managerChanged(True)
 
-########################
-        
-        # self.cb_cam.setFixedWidth(500)                                      #   ADDED     #   TODO   THIS STYLE STUFF IS NOT WORKING
-
         self.e_fml.setStyleSheet("border: none;")
         self.e_xRez.setStyleSheet("border: none;")
         self.e_yRez.setStyleSheet("border: none;")
-
         self.e_fml.setStyleSheet("background: transparent;")
         self.e_xRez.setStyleSheet("background: transparent;")
         self.e_yRez.setStyleSheet("background: transparent;")
 
-        # self.e_samples.setFixedWidth(50)                                     #   ADDED
-        # self.cb_outPath.setFixedWidth(250)                                   #   ADDED
-
-        # self.cb_renderLayer.setFixedWidth(400)                               #   ADDED
-
-        # self.cb_format.setFixedWidth(70)                                     #   ADDED
-        # self.cb_exrCodec.setFixedWidth(70)                                   #   ADDED
-        # self.cb_exrBitDepth.setFixedWidth(70)                                #   ADDED
-        # self.cb_pngBitDepth.setFixedWidth(70)                                #   ADDED
-
-
-#########################
-        
-
         #   If State exists in .blend, it will load it
         if stateData is not None:
-            self.loadData(stateData)
+            self.loadStateData(stateData)
 
         #   Sets Defaults for State when new
         else:   
-
-            self.e_aovNameCustom.hide()
-            self.e_aovNameCustom.setText("beauty")
-
-            self.loadAOVname(load="New")                         #   ADDED   TODO
-
-            context = self.getCurrentContext()
-            if context.get("type") == "asset":
-                self.setRangeType("Single Frame")
-            elif context.get("type") == "shot":
-                self.setRangeType("Shot")
-            elif self.stateManager.standalone:
-                self.setRangeType("Custom")
-            else:
-                self.setRangeType("Scene")
-
-            start, end = self.getFrameRange("Scene")
-            if start is not None:
-                self.sp_rangeStart.setValue(start)
-
-            if end is not None:
-                self.sp_rangeEnd.setValue(end)
-
-            if context.get("task"):
-                self.setTaskname(context.get("task"))
-
-            self.chb_overrideLayers.setChecked(False)                         #   ADDED
-
-            curLayName = self.getRenderLayers(curLayer=True)                  #   TODO MAKE DEFAULT
-
-
-            curIdx = self.cb_renderLayer.findText(curLayName)                 #    ADDED
-            if curIdx != -1:
-                self.cb_renderLayer.setCurrentIndex(curIdx)
-
-            #   Options for new instance of BlenderRender
-            newOptions = {                                                    #   ADDED
-                "format": ".exr",                                                       
-                "codec": "DWAA",                                    #   TODO  maybe use .blend settings for new state?
-                "bitDepth": "16",
-                "useAlpha": True
-            }
-            self.setupFormatOptions(mode="New", loadOptions=newOptions)       #   ADDED
-
-            samples = self.getRenderSamples(command="Status")
-            self.e_samples.setText(str(samples))                              #   ADDED
-
-            useComp = self.useCompositor(command="Status")                    #   ADDED
-            self.chb_compositor.setChecked(useComp)
-
-            usePD = self.getPersistantData(command="Status")                  #   ADDED
-            self.chb_persData.setChecked(usePD)
-
-            self.updateUi()
+            self.createNewStateData()
 
 
     @err_catcher(name=__name__)
-    def loadData(self, data):
+    def connectEvents(self):
+        self.e_aovNameCustom.textChanged.connect(self.stateManager.saveStatesToScene)
+        self.chb_customAOV.toggled.connect(self.updateUi)
+        self.e_name.textChanged.connect(self.nameChanged)
+        self.e_name.editingFinished.connect(self.stateManager.saveStatesToScene)
+        self.cb_context.activated.connect(self.onContextTypeChanged)
+        self.b_context.clicked.connect(self.selectContextClicked)
+        self.b_changeTask.clicked.connect(self.changeTask)
+        self.cb_scaling.activated.connect(self.updateUi)
+        self.chb_renderPreset.stateChanged.connect(self.presetOverrideChanged)
+        self.cb_renderPreset.activated.connect(self.stateManager.saveStatesToScene)
+        self.cb_rangeType.activated.connect(self.rangeTypeChanged)
+        self.sp_rangeStart.editingFinished.connect(self.startChanged)
+        self.sp_rangeEnd.editingFinished.connect(self.endChanged)
+        self.le_frameExpression.textChanged.connect(self.frameExpressionChanged)
+        self.le_frameExpression.editingFinished.connect(self.stateManager.saveStatesToScene)
+        self.le_frameExpression.setMouseTracking(True)
+        self.le_frameExpression.origMoveEvent = self.le_frameExpression.mouseMoveEvent
+        self.le_frameExpression.mouseMoveEvent = self.exprMoveEvent
+        self.le_frameExpression.leaveEvent = self.exprLeaveEvent
+        self.le_frameExpression.focusOutEvent = self.exprFocusOutEvent
+        self.cb_cam.activated.connect(self.setCam)
+        self.chb_resOverride.stateChanged.connect(self.resOverrideChanged)
+        self.sp_resWidth.editingFinished.connect(self.stateManager.saveStatesToScene)
+        self.sp_resHeight.editingFinished.connect(self.stateManager.saveStatesToScene)
+        self.b_resPresets.clicked.connect(self.showResPresets)
+        self.cb_master.activated.connect(self.stateManager.saveStatesToScene)
+        self.e_samples.textChanged.connect(self.stateManager.saveStatesToScene)
+        self.cb_outPath.activated[str].connect(self.stateManager.saveStatesToScene)
+        self.chb_compositor.toggled.connect(self.stateManager.saveStatesToScene)            
+        self.chb_persData.toggled.connect(self.stateManager.saveStatesToScene)              
+        self.cb_format.currentIndexChanged.connect(self.setupFormatOptions)                 
+        self.cb_format.activated.connect(self.stateManager.saveStatesToScene)
+        self.cb_exrCodec.activated.connect(self.stateManager.saveStatesToScene)             
+        self.cb_exrBitDepth.activated.connect(self.stateManager.saveStatesToScene)          
+        self.cb_pngBitDepth.activated.connect(self.stateManager.saveStatesToScene)          
+        self.sp_pngCompress.editingFinished.connect(self.stateManager.saveStatesToScene)    
+        self.sp_jpegQual.editingFinished.connect(self.stateManager.saveStatesToScene)       
+        self.chb_alpha.toggled.connect(self.updateUi)                 
+        self.gb_submit.toggled.connect(self.rjToggled)
+        self.cb_manager.activated.connect(self.managerChanged)
+        self.sp_rjPrio.editingFinished.connect(self.stateManager.saveStatesToScene)
+        self.sp_rjFramesPerTask.editingFinished.connect(self.stateManager.saveStatesToScene)
+        self.sp_rjTimeout.editingFinished.connect(self.stateManager.saveStatesToScene)
+        self.chb_rjSuspended.stateChanged.connect(self.stateManager.saveStatesToScene)
+        self.chb_osDependencies.stateChanged.connect(self.stateManager.saveStatesToScene)
+        self.chb_osUpload.stateChanged.connect(self.stateManager.saveStatesToScene)
+        self.chb_osPAssets.stateChanged.connect(self.stateManager.saveStatesToScene)
+        self.e_osSlaves.editingFinished.connect(self.stateManager.saveStatesToScene)
+        self.b_osSlaves.clicked.connect(self.openSlaves)
+        self.sp_dlConcurrentTasks.editingFinished.connect(self.stateManager.saveStatesToScene)
+        self.sp_dlGPUpt.editingFinished.connect(self.gpuPtChanged)
+        self.le_dlGPUdevices.editingFinished.connect(self.gpuDevicesChanged)
+        self.gb_passes.toggled.connect(self.stateManager.saveStatesToScene)
+        self.b_addPasses.clicked.connect(self.showPasses)
+        self.lw_passes.customContextMenuRequested.connect(self.rclickPasses)
+        self.b_pathLast.clicked.connect(self.showLastPathMenu)
+        self.lw_passes.itemDoubleClicked.connect(
+            lambda x: self.core.appPlugin.sm_render_openPasses(self)
+            )
+
+
+    @err_catcher(name=__name__)
+    def loadStateData(self, data):
         if "contextType" in data:
             self.setContextType(data["contextType"])
         if "customContext" in data:
@@ -289,32 +283,28 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         if "taskname" in data:
             self.setTaskname(data["taskname"])
 
-        self.updateUi()
+        if "useCustomAOV" in data:
+            checked = data["useCustomAOV"]
+            self.chb_customAOV.setChecked(checked)
+            self.aovNameSetup()
 
-        if "aovNameAuto" in data:                                           #   ADDED
-            self.e_aovNameAuto.setText(data["aovNameAuto"])      
-        if "aovNameCustom" in data:                                         #   ADDED
+        if "aovNameCustom" in data:                                         
             self.e_aovNameCustom.setText(data["aovNameCustom"])
-
-        checked = self.chb_customAOV.isChecked()
-        self.aovNameToggle(checked)
 
         if "stateName" in data:
             self.e_name.setText(data["stateName"])
         elif "statename" in data:
             self.e_name.setText(data["statename"] + " - {identifier}")
 
-        if "rezScale" in data:                                              #   ADDED
+        if "rezScale" in data:                                              
             idx = self.cb_scaling.findText(data["rezScale"])
             if idx != -1:
                 self.cb_scaling.setCurrentIndex(idx)
                 self.stateManager.saveStatesToScene()
-        else:                                                               #   ADDED
+        else:                                                               
             idx = self.cb_scaling.findText("100")
             self.cb_scaling.setCurrentIndex(idx)
             self.stateManager.saveStatesToScene()
-
-        self.rezScaleCalc("load")                                        #   ADDED      TODO This is here and in setup
 
         if "renderpresetoverride" in data:
             res = eval(data["renderpresetoverride"])
@@ -338,7 +328,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         if "currentcam" in data:
             camName = getattr(self.core.appPlugin, "getCamName", lambda x, y: "")(
                 self, data["currentcam"]
-            )
+                )
             idx = self.cb_cam.findText(camName)
             if idx != -1:
                 self.curCam = self.camlist[idx]
@@ -353,16 +343,16 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
             idx = self.cb_master.findText(data["masterVersion"])
             if idx != -1:
                 self.cb_master.setCurrentIndex(idx)
-        if "renderSamples" in data:                                         #   ADDED
+        if "renderSamples" in data:                                         
             self.e_samples.setText(data["renderSamples"])
         if "curoutputpath" in data:
             idx = self.cb_outPath.findText(data["curoutputpath"])
             if idx != -1:
                 self.cb_outPath.setCurrentIndex(idx)
-        if "overrideLayers" in data:                                        #   ADDED
+        if "overrideLayers" in data:                                        
             self.chb_overrideLayers.setChecked(data["overrideLayers"])
             self.cb_renderLayer.setEnabled(data["overrideLayers"])
-        if "renderlayer" in data:                                           #   ADDED   TODO
+        if "renderlayer" in data:                                                           #    TODO
             idx = self.cb_renderLayer.findText(data["renderlayer"])
             if idx != -1:
                 self.cb_renderLayer.setCurrentIndex(idx)
@@ -372,45 +362,55 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
             if idx != -1:
                 self.cb_format.setCurrentIndex(idx)
 
-        self.setupFormatOptions(mode="Load")                                #   ADDED
+        self.setupFormatOptions(mode="Load")                                
 
-        if "codec" in data:                                                 #   ADDED
+        if "codec" in data:                                                 
             idx = self.cb_exrCodec.findText(data["codec"])
             if idx != -1:
                 self.cb_exrCodec.setCurrentIndex(idx)
 
-        if "exrBitDepth" in data:                                           #   ADDED
+        if "exrBitDepth" in data:                                           
             idx = self.cb_exrBitDepth.findText(data["exrBitDepth"])
             if idx != -1:
                 self.cb_exrBitDepth.setCurrentIndex(idx)
 
-        if "pngBitDepth" in data:                                           #   ADDED
+        if "pngBitDepth" in data:                                           
             idx = self.cb_pngBitDepth.findText(data["pngBitDepth"])
             if idx != -1:
                 self.cb_pngBitDepth.setCurrentIndex(idx)
 
         if "pngComp" in data:
-            self.sp_pngCompress.setValue(int(data["pngComp"]))              #   ADDED
+            self.sp_pngCompress.setValue(int(data["pngComp"]))              
 
         if "jpegQual" in data:
-            self.sp_jpegQual.setValue(int(data["jpegQual"]))                #   ADDED
+            self.sp_jpegQual.setValue(int(data["jpegQual"]))                
 
-        if "useAlpha" in data:                                              #   ADDED
+        if "useAlpha" in data:                                              
             self.chb_alpha.setChecked(data["useAlpha"])
 
-        if "useComp" in data:                                               #   ADDED
+        if "useComp" in data:                                               
             self.chb_compositor.setChecked(data["useComp"])
 
-        if "persData" in data:                                              #   ADDED
-            self.chb_persData.setChecked(data["persData"])        
+        if "persData" in data:                                              
+            self.chb_persData.setChecked(data["persData"])     
+
+        if "aovPasses" in data:
+            # Clear the existing items in the QListWidget if needed
+            self.lw_passes.clear()
+            # Add items from passList to the QListWidget
+            for passItem in data["aovPasses"]:
+                self.lw_passes.addItem(passItem)
 
         if "submitrender" in data:
             self.gb_submit.setChecked(eval(data["submitrender"]))
+
         if "rjmanager" in data:
             idx = self.cb_manager.findText(data["rjmanager"])
             if idx != -1:
                 self.cb_manager.setCurrentIndex(idx)
+
             self.managerChanged(True)
+
         if "rjprio" in data:
             self.sp_rjPrio.setValue(int(data["rjprio"]))
         if "rjframespertask" in data:
@@ -448,83 +448,121 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
                     data["stateenabled"]
                     .replace("PySide.QtCore.", "")
                     .replace("PySide2.QtCore.", "")
-                ),
-            )
+                    ),
+                )
+
+        self.updateUi()
 
         self.core.callback("onStateSettingsLoaded", self, data)
 
 
     @err_catcher(name=__name__)
-    def connectEvents(self):
-        self.e_aovNameCustom.textChanged.connect(self.stateManager.saveStatesToScene)           #   ADDED
-        self.chb_customAOV.toggled.connect(self.aovNameToggle)
-        self.e_name.textChanged.connect(self.nameChanged)
-        self.e_name.editingFinished.connect(self.stateManager.saveStatesToScene)
-        self.cb_context.activated.connect(self.onContextTypeChanged)
-        self.b_context.clicked.connect(self.selectContextClicked)
-        self.b_changeTask.clicked.connect(self.changeTask)
-        self.cb_scaling.activated.connect(self.rezScaleCalc)                                    #   ADDED
-        self.chb_renderPreset.stateChanged.connect(self.presetOverrideChanged)
-        self.cb_renderPreset.activated.connect(self.stateManager.saveStatesToScene)
-        self.cb_rangeType.activated.connect(self.rangeTypeChanged)
-        self.sp_rangeStart.editingFinished.connect(self.startChanged)
-        self.sp_rangeEnd.editingFinished.connect(self.endChanged)
-        self.le_frameExpression.textChanged.connect(self.frameExpressionChanged)
-        self.le_frameExpression.editingFinished.connect(self.stateManager.saveStatesToScene)
-        self.le_frameExpression.setMouseTracking(True)
-        self.le_frameExpression.origMoveEvent = self.le_frameExpression.mouseMoveEvent
-        self.le_frameExpression.mouseMoveEvent = self.exprMoveEvent
-        self.le_frameExpression.leaveEvent = self.exprLeaveEvent
-        self.le_frameExpression.focusOutEvent = self.exprFocusOutEvent
-        self.cb_cam.activated.connect(self.setCam)
-        self.chb_resOverride.stateChanged.connect(self.resOverrideChanged)
-        self.sp_resWidth.editingFinished.connect(self.stateManager.saveStatesToScene)
-        self.sp_resHeight.editingFinished.connect(self.stateManager.saveStatesToScene)
-        self.b_resPresets.clicked.connect(self.showResPresets)
-        self.cb_master.activated.connect(self.stateManager.saveStatesToScene)
-        self.e_samples.textChanged.connect(self.stateManager.saveStatesToScene)             #   ADDED
-        self.cb_outPath.activated[str].connect(self.stateManager.saveStatesToScene)
-        self.chb_compositor.toggled.connect(self.stateManager.saveStatesToScene)            #   ADDED
-        self.chb_persData.toggled.connect(self.stateManager.saveStatesToScene)              #   ADDED
-        self.cb_renderLayer.currentIndexChanged.connect(self.loadAOVname)
-        self.cb_format.currentIndexChanged.connect(self.setupFormatOptions)                 #   ADDED
-        self.cb_format.activated.connect(self.stateManager.saveStatesToScene)
-        self.cb_exrCodec.activated.connect(self.stateManager.saveStatesToScene)             #   ADDED
-        self.cb_exrBitDepth.activated.connect(self.stateManager.saveStatesToScene)          #   ADDED
-        self.cb_pngBitDepth.activated.connect(self.stateManager.saveStatesToScene)          #   ADDED
-        self.sp_pngCompress.editingFinished.connect(self.stateManager.saveStatesToScene)    #   ADDED
-        self.sp_jpegQual.editingFinished.connect(self.stateManager.saveStatesToScene)       #   ADDED
-        self.chb_alpha.toggled.connect(self.stateManager.saveStatesToScene)                 #   ADDED
-        self.gb_submit.toggled.connect(self.rjToggled)
-        self.cb_manager.activated.connect(self.managerChanged)
-        self.sp_rjPrio.editingFinished.connect(self.stateManager.saveStatesToScene)
-        self.sp_rjFramesPerTask.editingFinished.connect(self.stateManager.saveStatesToScene)
-        self.sp_rjTimeout.editingFinished.connect(self.stateManager.saveStatesToScene)
-        self.chb_rjSuspended.stateChanged.connect(self.stateManager.saveStatesToScene)
-        self.chb_osDependencies.stateChanged.connect(self.stateManager.saveStatesToScene)
-        self.chb_osUpload.stateChanged.connect(self.stateManager.saveStatesToScene)
-        self.chb_osPAssets.stateChanged.connect(self.stateManager.saveStatesToScene)
-        self.e_osSlaves.editingFinished.connect(self.stateManager.saveStatesToScene)
-        self.b_osSlaves.clicked.connect(self.openSlaves)
-        self.sp_dlConcurrentTasks.editingFinished.connect(self.stateManager.saveStatesToScene)
-        self.sp_dlGPUpt.editingFinished.connect(self.gpuPtChanged)
-        self.le_dlGPUdevices.editingFinished.connect(self.gpuDevicesChanged)
-        self.gb_passes.toggled.connect(self.stateManager.saveStatesToScene)
-        self.b_addPasses.clicked.connect(self.showPasses)
-        self.lw_passes.customContextMenuRequested.connect(self.rclickPasses)
-        self.b_pathLast.clicked.connect(self.showLastPathMenu)
-        self.lw_passes.itemDoubleClicked.connect(
-            lambda x: self.core.appPlugin.sm_render_openPasses(self)
-        )
+    def createNewStateData(self):
+        
+        self.e_aovNameCustom.hide()
+        self.e_aovNameCustom.setText("beauty")
+
+        context = self.getCurrentContext()
+        if context.get("type") == "asset":
+            self.setRangeType("Single Frame")
+        elif context.get("type") == "shot":
+            self.setRangeType("Shot")
+        elif self.stateManager.standalone:
+            self.setRangeType("Custom")
+        else:
+            self.setRangeType("Scene")
+
+        start, end = self.getFrameRange("Scene")
+        if start is not None:
+            self.sp_rangeStart.setValue(start)
+
+        if end is not None:
+            self.sp_rangeEnd.setValue(end)
+
+        if context.get("task"):
+            self.setTaskname(context.get("task"))
+
+        notUpdateIdx = self.cb_master.findText("Don't update master")
+        if notUpdateIdx != -1:
+            self.cb_master.setCurrentIndex(notUpdateIdx)
+
+        self.chb_overrideLayers.setChecked(False)                         
+
+        curLayName = self.getRenderLayers(curLayer=True)
+        curIdx = self.cb_renderLayer.findText(curLayName)
+        if curIdx != -1:
+            self.cb_renderLayer.setCurrentIndex(curIdx)
+
+        #   Options for new instance of BlenderRender
+        newOptions = {                                                    
+            "format": ".exr",                                                       
+            "codec": "DWAA",
+            "bitDepth": "16",
+            "useAlpha": True
+        }
+        self.setupFormatOptions(mode="New", loadOptions=newOptions)       
+
+        samples = self.getRenderSamples(command="Status")
+        self.e_samples.setText(str(samples))                              
+
+        useComp = self.useCompositor(command="Status")                    
+        self.chb_compositor.setChecked(useComp)
+
+        usePD = self.getPersistantData(command="Status")                  
+        self.chb_persData.setChecked(usePD)
+
+        self.updateUi()
 
 
     @err_catcher(name=__name__)
-    def setupFormatOptions(self, index=None, mode=None, loadOptions=None):              #   TODO index needed???
+    def updateUi(self, *arg):
+        self.w_context.setHidden(not self.allowCustomContext)
+        self.refreshContext()
+
+        # update Cams
+        self.cb_cam.clear()
+        self.camlist = camNames = []
+
+        if not self.stateManager.standalone:
+            self.camlist = self.core.appPlugin.getCamNodes(self, cur=True)
+            camNames = [self.core.appPlugin.getCamName(self, i) for i in self.camlist]
+
+        self.cb_cam.addItems(camNames)
+
+        if self.curCam in self.camlist:
+            self.cb_cam.setCurrentIndex(self.camlist.index(self.curCam))
+        else:
+            self.cb_cam.setCurrentIndex(0)
+            if len(self.camlist) > 0:
+                self.curCam = self.camlist[0]
+            else:
+                self.curCam = None
+
+            self.stateManager.saveStatesToScene()
+
+        self.rezScaleCalc("load")                                                 
+        self.updateRange()
+
+        if not self.core.mediaProducts.getUseMaster():
+            self.w_master.setVisible(False)
+
+        self.refreshSubmitUi()
+        getattr(self.core.appPlugin, "sm_render_refreshPasses", lambda x: None)(self)
+
+        self.nameChanged(self.e_name.text())
+        self.aovNameSetup()
+        self.stateManager.saveStatesToScene()
+
+        return True
+    
+
+    @err_catcher(name=__name__)
+    def setupFormatOptions(self, index=None, mode=None, loadOptions=None):
 
         for widget in [
             self.l_bitDepth, self.cb_exrBitDepth, self.cb_pngBitDepth,
             self.cb_exrCodec, self.sp_pngCompress, self.sp_jpegQual, self.chb_alpha
-        ]:
+            ]:
             widget.hide()
 
         if mode in ["New", "Load"]:
@@ -571,8 +609,37 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         if "alpha" in options and options["alpha"]:
             self.chb_alpha.show()
 
+        self.updateUi()
+
         self.stateManager.saveStatesToScene()
-               
+
+
+    @err_catcher(name=__name__)                                     
+    def aovNameSetup(self, checked=False):
+
+        autoName = not self.chb_customAOV.isChecked()
+        fileType = self.cb_format.currentText()
+        useAlpha = self.chb_alpha.isChecked()
+
+        self.e_aovNameAuto.setVisible(autoName)
+        self.e_aovNameCustom.setVisible(not autoName)
+
+        isEXRmulti = fileType == ".exrMulti"
+        self.gb_passes.setChecked(isEXRmulti)
+        self.gb_passes.setEnabled(isEXRmulti)
+        self.lw_passes.setVisible(isEXRmulti)
+
+        aovName = "beauty"
+        if fileType in [".exr", ".exrMulti", ".png"]:
+            aovName = "RGB"
+        if useAlpha:
+            aovName = aovName + "A"
+        if isEXRmulti:
+            aovName = aovName + "-Data"
+        self.e_aovNameAuto.setText(aovName)
+
+        self.stateManager.saveStatesToScene()
+
 
     @err_catcher(name=__name__)
     def showLastPathMenu(self, state=None):
@@ -631,27 +698,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         self.stateManager.saveStatesToScene()
 
 
-    @err_catcher(name=__name__)                                     #   ADDED
-    def loadAOVname(self, load):
-        if load == "New":
-            self.e_aovNameAuto.setText(self.getRenderLayers(curLayer=True))
-        else:
-            self.e_aovNameAuto.setText(self.cb_renderLayer.currentText())
-
-        self.stateManager.saveStatesToScene()
-
-
-    @err_catcher(name=__name__)                                     #   ADDED
-    def aovNameToggle(self, checked):
-        self.e_aovNameAuto.setVisible(not checked)
-        self.e_aovNameCustom.setVisible(checked)
-
-        self.stateManager.saveStatesToScene()
-
-        return
-
-
-    @err_catcher(name=__name__)                                     #   ADDED
+    @err_catcher(name=__name__)                                     
     def currentAOVname(self):
         if self.chb_customAOV.isChecked():
             return self.e_aovNameCustom.text()
@@ -706,7 +753,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         if hasattr(self, "expressionWin") and self.expressionWin.isVisible():
             self.expressionWin.move(
                 QCursor.pos().x() + 20, QCursor.pos().y() - self.expressionWin.height()
-            )
+                )
         self.le_frameExpression.origMoveEvent(event)
 
 
@@ -720,7 +767,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
             ss = getattr(self.core.appPlugin, "getFrameStyleSheet", lambda x: "")(self)
             self.expressionWin.setStyleSheet(
                 ss + """ .QFrame{ border: 2px solid rgb(100,100,100);} """
-            )
+                )
 
             self.core.parentWindow(self.expressionWin)
             winwidth = 10
@@ -742,7 +789,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
                 Qt.FramelessWindowHint  # hides the window controls
                 | Qt.WindowStaysOnTopHint  # forces window to top... maybe
                 | Qt.SplashScreen  # this one hides it from the task bar!
-            )
+                )
 
             self.expressionWin.setGeometry(0, 0, winwidth, winheight)
             self.expressionWin.move(QCursor.pos().x() + 20, QCursor.pos().y())
@@ -954,7 +1001,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         return res
     
 
-    @err_catcher(name=__name__)                                 #   ADDED
+    @err_catcher(name=__name__)                                 
     def rezScaleCalc(self, index):
 
         if hasattr(self.core.appPlugin, "getResolution"):
@@ -987,7 +1034,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         return False
     
 
-    @err_catcher(name=__name__)                             #   ADDED
+    @err_catcher(name=__name__)                             
     def getRenderSamples(self, command, samples=None):
         if command == "Status":
             isChecked = self.core.appPlugin.getRenderSamples(command="Status")
@@ -998,7 +1045,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
             self.core.appPlugin.getRenderSamples(command="Set", samples=samples)
 
 
-    @err_catcher(name=__name__)                             #   ADDED
+    @err_catcher(name=__name__)                             
     def useCompositor(self, command, useComp=False):
         if command == "Status":
             isChecked = self.core.appPlugin.useCompositor(command="Status")
@@ -1009,7 +1056,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
             self.core.appPlugin.useCompositor(command="Set", useComp=useComp)
 
 
-    @err_catcher(name=__name__)                             #   ADDED
+    @err_catcher(name=__name__)                             
     def getPersistantData (self, command, usePD=False):
         if command == "Status":
             isChecked = self.core.appPlugin.getPersistantData(command="Status")
@@ -1036,56 +1083,14 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         return False
     
 
-    @err_catcher(name=__name__)                         #   ADDED
+    @err_catcher(name=__name__)                         
     def getRenderLayers(self, curLayer=False):
         renderLayers, currentLayer = self.core.appPlugin.getRenderLayers()
 
         if curLayer:
             return currentLayer
         else:
-
-            self.cb_renderLayer.addItem("* All LAYERS *")           #   TODO DEAL WITH  * ALL LAYERS *
             self.cb_renderLayer.addItems(renderLayers)
-
-
-    @err_catcher(name=__name__)
-    def updateUi(self):
-        self.w_context.setHidden(not self.allowCustomContext)
-        self.refreshContext()
-
-        # update Cams
-        self.cb_cam.clear()
-        self.camlist = camNames = []
-
-        if not self.stateManager.standalone:
-            self.camlist = self.core.appPlugin.getCamNodes(self, cur=True)
-            camNames = [self.core.appPlugin.getCamName(self, i) for i in self.camlist]
-
-        self.cb_cam.addItems(camNames)
-
-        if self.curCam in self.camlist:
-            self.cb_cam.setCurrentIndex(self.camlist.index(self.curCam))
-        else:
-            self.cb_cam.setCurrentIndex(0)
-            if len(self.camlist) > 0:
-                self.curCam = self.camlist[0]
-            else:
-                self.curCam = None
-
-            self.stateManager.saveStatesToScene()
-
-        self.rezScaleCalc("load")                                                 #   ADDED
-
-        self.updateRange()
-
-        if not self.core.mediaProducts.getUseMaster():
-            self.w_master.setVisible(False)
-
-        self.refreshSubmitUi()
-        getattr(self.core.appPlugin, "sm_render_refreshPasses", lambda x: None)(self)
-
-        self.nameChanged(self.e_name.text())
-        return True
     
 
     @err_catcher(name=__name__)
@@ -1136,7 +1141,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         isCustom = rangeType == "Custom"
         isExp = rangeType == "Expression"
         isFML = rangeType in ["FML", "FMMML"]
-                                          #   ADDED
+                                          
 
         self.l_rangeStart.setVisible(not isCustom and not isExp and not isFML)
         self.l_rangeEnd.setVisible(not isCustom and not isExp and not isFML)
@@ -1155,8 +1160,8 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
             self.l_rangeStart.setText(start)
             self.l_rangeEnd.setText(end)
 
-        if rangeType in ["FML", "FMMML"]:                                                      #   ADDED
-            self.fmlRange(rangeType)                                                         #   ADDED
+        if rangeType in ["FML", "FMMML"]:                                                      
+            self.fmlRange(rangeType)                                                         
 
 
     @err_catcher(name=__name__)
@@ -1173,7 +1178,6 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
             step = (endFrame - startFrame) / 4
             mdlFirst, mdlSecond, mdlThrird = round(startFrame + step), round(startFrame + 2 * step), round(startFrame + 3 * step)
             fmlString = f"{startFrame}, {mdlFirst}, {mdlSecond}, {mdlThrird}, {endFrame}"
-
 
         self.e_fml.setText(fmlString)
 
@@ -1237,7 +1241,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
         self.sa = SlaveAssignment.SlaveAssignment(
             core=self.core, curSlaves=self.e_osSlaves.text()
-        )
+            )
         result = self.sa.exec_()
 
         if result == 1:
@@ -1280,6 +1284,13 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
     @err_catcher(name=__name__)
     def showPasses(self):
+
+        # if self.chb_overrideLayers.isChecked():
+        #     renderLayer = self.cb_renderLayer.currentText()
+        # else:
+        #     renderLayer = "**ALL**"
+
+
         steps = getattr(
             self.core.appPlugin, "sm_render_getRenderPasses", lambda x: None
         )(self)
@@ -1314,6 +1325,13 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
         if result != 1:
             return False
+        
+        # for i in self.il.tw_steps.selectedItems():
+        #     self.core.popup(f"i: {i}")                                      #    TESTING
+        #     if i.column() == 0:
+        #         self.lw_passes.addItem(i.text())
+
+
 
         for i in self.il.tw_steps.selectedItems():
             if i.column() == 0:
@@ -1329,7 +1347,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
     def rclickPasses(self, pos):
         if self.lw_passes.currentItem() is None or not getattr(
             self.core.appPlugin, "canDeleteRenderPasses", True
-        ):
+            ):
             return
 
         rcmenu = QMenu()
@@ -1393,7 +1411,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         if self.curCam is None or (
             self.curCam != "Current View"
             and not self.core.appPlugin.isNodeValid(self, self.curCam)
-        ):
+            ):
             warnings.append(["No camera is selected.", "", 3])
         elif self.curCam == "Current View":
             warnings.append(["No camera is selected.", "", 2])
@@ -1442,7 +1460,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
             singleFrame=singleFrame,
             returnDetails=True,
             mediaType=self.mediaType,
-        )
+            )
 
         outputFolder = os.path.dirname(outputPathData["path"])
         hVersion = outputPathData["version"]
@@ -1455,7 +1473,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         rangeType = self.cb_rangeType.currentText()
         frames = self.getFrameRange(rangeType)
 
-        if rangeType not in ["Expression", "FML", "FMMML"]:                     #   EDITED
+        if rangeType not in ["Expression", "FML", "FMMML"]:
             startFrame = frames[0]
             endFrame = frames[1]
         else:
@@ -1521,45 +1539,54 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
                 filepath=infopath, details=details
             )
 
-            aovName = self.currentAOVname()                                 #   ADDED
+            aovName = self.currentAOVname()        
+
+            passList = []
+
+            # Iterate through each item in the QListWidget
+            for row in range(self.lw_passes.count()):
+                passItem = self.lw_passes.item(row)
+                if passItem is not None:
+                    passList.append(passItem.text())                       
 
             self.l_pathLast.setText(outputName)
             self.l_pathLast.setToolTip(outputName)
             self.stateManager.saveStatesToScene()
 
             rSettings = {
-                "aovName": aovName,                                         #   ADDED
+                "aovName": aovName,                                         
                 "outputName": outputName,
                 "startFrame": startFrame,
                 "endFrame": endFrame,
                 "frames": frames,
                 "rangeType": rangeType,
-                "overrideLayers": self.chb_overrideLayers.isChecked(),      #   ADDED
-                "renderLayer": self.cb_renderLayer.currentText(),           #   ADDED
-                "renderSamples": self.e_samples.text(),                     #   ADDED
-                "imageFormat": self.cb_format.currentText(),                #   ADDED
-                "exrCodec": self.cb_exrCodec.currentText(),                 #   ADDED
-                "exrBitDepth": self.cb_exrBitDepth.currentText(),           #   ADDED
-                "pngBitDepth": self.cb_pngBitDepth.currentText(),           #   ADDED
-                "pngCompress": self.sp_pngCompress.value(),                 #   ADDED
-                "jpegQual": self.sp_jpegQual.value(),                       #   ADDED
-                "useAlpha": self.chb_alpha.isChecked(),                     #   ADDED
-                "useComp": self.chb_compositor.isChecked(),                 #   ADDED
-                "persData": self.chb_persData.isChecked()                   #   ADDED
-            }
+                "overrideLayers": self.chb_overrideLayers.isChecked(),      
+                "renderLayer": self.cb_renderLayer.currentText(),           
+                "renderSamples": self.e_samples.text(),                     
+                "imageFormat": self.cb_format.currentText(),                
+                "exrCodec": self.cb_exrCodec.currentText(),                 
+                "exrBitDepth": self.cb_exrBitDepth.currentText(),           
+                "pngBitDepth": self.cb_pngBitDepth.currentText(),           
+                "pngCompress": self.sp_pngCompress.value(),                 
+                "jpegQual": self.sp_jpegQual.value(),                       
+                "useAlpha": self.chb_alpha.isChecked(),                     
+                "useComp": self.chb_compositor.isChecked(),                 
+                "persData": self.chb_persData.isChecked(),
+                "aovPasses": passList                   
+                }
 
             if (
                 self.chb_renderPreset.isChecked()
                 and "RenderSettings" in self.stateManager.stateTypes
-            ):
+                ):
                 rSettings["renderSettings"] = getattr(
                     self.core.appPlugin,
                     "sm_renderSettings_getCurrentSettings",
                     lambda x: {},
-                )(self)
+                    )(self)
                 self.stateManager.stateTypes["RenderSettings"].applyPreset(
                     self.core, self.renderPresets[self.cb_renderPreset.currentText()]
-                )
+                    )
 
             self.core.appPlugin.sm_render_preSubmit(self, rSettings)
 
@@ -1567,7 +1594,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
                 "state": self,
                 "scenefile": fileName,
                 "settings": rSettings,
-            }
+                }
 
             result = self.core.callback("preRender", **kwargs)
             for res in result:
@@ -1575,7 +1602,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
                     return [
                         self.state.text(0)
                         + " - error - %s" % res.get("details", "preRender hook returned False")
-                    ]
+                        ]
 
             if not os.path.exists(os.path.dirname(rSettings["outputName"])):
                 os.makedirs(os.path.dirname(rSettings["outputName"]))
@@ -1597,23 +1624,23 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
                     handleMaster=handleMaster,
                     details=details,
                     sceneDescription=sceneDescription
-                )
+                    )
                 updateMaster = False
             else:
                 result = self.core.appPlugin.sm_render_startLocalRender(
                     self, rSettings["outputName"], rSettings
-                )
+                    )
         else:
             rSettings = self.LastRSettings
             result = self.core.appPlugin.sm_render_startLocalRender(
                 self, rSettings["outputName"], rSettings
-            )
+                )
             outputName = rSettings["outputName"]
 
         if not self.renderingStarted:
             self.core.appPlugin.sm_render_undoRenderSettings(self, rSettings)
 
-            self.core.saveScene(versionUp=False, prismReq=False)                        #   ADDED
+            self.core.saveScene(versionUp=False, prismReq=False)                        
 
 
         if result == "publish paused":
@@ -1627,7 +1654,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
                 "scenefile": fileName,
                 "settings": rSettings,
                 "result": result,
-            }
+                }
 
             self.core.callback("postRender", **kwargs)
 
@@ -1638,14 +1665,14 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
                     time.strftime("%d/%m/%y %X"),
                     self.core.version,
                     result,
-                )
+                    )
                 if not result.startswith("Execute Canceled: "):
                     if result == "unknown error (files do not exist)":
                         QMessageBox.warning(
                             self.core.messageParent,
                             "Warning",
                             "No files were created during the rendering. If you think this is a Prism bug please report it in the forum:\nwww.prism-pipeline.com/forum/\nor write a mail to contact@prism-pipeline.com",
-                        )
+                            )
                     else:
                         self.core.writeErrorLog(erStr)
                 return [self.state.text(0) + " - error - " + result]
@@ -1695,15 +1722,26 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
     @err_catcher(name=__name__)
     def getStateProps(self):
+
+        passList = []
+
+        # Iterate through each item in the QListWidget
+        for row in range(self.lw_passes.count()):
+            passItem = self.lw_passes.item(row)
+            if passItem is not None:
+                passList.append(passItem.text())
+
         stateProps = {
             "stateName": self.e_name.text(),
             "contextType": self.getContextType(),
             "customContext": self.customContext,
+
+            "useCustomAOV": self.chb_customAOV.isChecked(),
             "aovNameAuto": self.e_aovNameAuto.text(),                           #   TODO
             "aovNameCustom": self.e_aovNameCustom.text(),                       #   TODO
 
             "taskname": self.getTaskname(),
-            "rezScale": str(self.cb_scaling.currentText()),                     #   ADDED
+            "rezScale": str(self.cb_scaling.currentText()),                     
             "renderpresetoverride": str(self.chb_renderPreset.isChecked()),
             "currentrenderpreset": self.cb_renderPreset.currentText(),
             "rangeType": str(self.cb_rangeType.currentText()),
@@ -1717,21 +1755,22 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
                     self.sp_resWidth.value(),
                     self.sp_resHeight.value(),
                 ]
-            ),
+                ),
             "masterVersion": self.cb_master.currentText(),
-            "renderSamples": self.e_samples.text(),                             #   ADDED
+            "renderSamples": self.e_samples.text(),                             
             "curoutputpath": self.cb_outPath.currentText(),
-            "overrideLayers": self.chb_overrideLayers.isChecked(),              #   ADDED
+            "overrideLayers": self.chb_overrideLayers.isChecked(),              
             "renderlayer": str(self.cb_renderLayer.currentText()),
-            "useComp": self.chb_compositor.isChecked(),                         #   ADDED
-            "persData": self.chb_persData.isChecked(),                          #   ADDED
+            "useComp": self.chb_compositor.isChecked(),                         
+            "persData": self.chb_persData.isChecked(),                          
             "outputFormat": str(self.cb_format.currentText()),
-            "codec": self.cb_exrCodec.currentText(),                            #   ADDED
-            "exrBitDepth": self.cb_exrBitDepth.currentText(),                   #   ADDED
-            "pngBitDepth": self.cb_pngBitDepth.currentText(),                   #   ADDED
-            "pngComp": self.sp_pngCompress.value(),                             #   ADDED
-            "jpegQual": self.sp_jpegQual.value(),                               #   ADDED
-            "useAlpha": self.chb_alpha.isChecked(),                             #   ADDED
+            "codec": self.cb_exrCodec.currentText(),                            
+            "exrBitDepth": self.cb_exrBitDepth.currentText(),                   
+            "pngBitDepth": self.cb_pngBitDepth.currentText(),                   
+            "pngComp": self.sp_pngCompress.value(),                             
+            "jpegQual": self.sp_jpegQual.value(),                               
+            "useAlpha": self.chb_alpha.isChecked(),
+            "aovPasses": passList,
             "submitrender": str(self.gb_submit.isChecked()),
             "rjmanager": str(self.cb_manager.currentText()),
             "rjprio": self.sp_rjPrio.value(),
@@ -1748,6 +1787,6 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
             "lastexportpath": self.l_pathLast.text().replace("\\", "/"),
             "enablepasses": str(self.gb_passes.isChecked()),
             "stateenabled": str(self.state.checkState(0)),
-        }
+            }
         self.core.callback("onStateGetSettings", self, stateProps)
         return stateProps
