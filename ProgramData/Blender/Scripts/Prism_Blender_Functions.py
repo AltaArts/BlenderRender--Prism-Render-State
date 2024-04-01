@@ -232,6 +232,9 @@ class Prism_Blender_Functions(object):
         baseFps = bpy.context.scene.render.fps_base
         return round(intFps / baseFps, 2)
     
+#####################################################################
+#VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV#
+    
     @err_catcher(name=__name__)
     def setFPS(self, origin, fps):
 
@@ -241,6 +244,10 @@ class Prism_Blender_Functions(object):
             intFps = math.ceil(fps)
             bpy.context.scene.render.fps = intFps
             bpy.context.scene.render.fps_base = intFps/fps
+
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^#
+#######################################################################
+
 
     @err_catcher(name=__name__)
     def getResolution(self):
@@ -1030,7 +1037,7 @@ class Prism_Blender_Functions(object):
             bpy.context.scene.render.image_settings.color_depth = rSettings["exrBitDepth"]
             bpy.context.scene.render.image_settings.color_mode = alpha
 
-        if imageFormat == ".exrMulti":
+        elif imageFormat == ".exrMulti":
             imageFormat = "OPEN_EXR_MULTILAYER"
             bpy.context.scene.render.image_settings.file_format = imageFormat
             bpy.context.scene.render.image_settings.exr_codec = rSettings["exrCodec"]
@@ -1067,7 +1074,7 @@ class Prism_Blender_Functions(object):
         if mode == "Set":
             origLayers = {}
 
-            #   Ittertes through all layers Render and saves the orig state.
+            #   Iterates through all layers Render and saves the orig state.
             for vl in bpy.context.scene.view_layers:
                 origLayers[vl.name] = vl.use
 
@@ -1080,29 +1087,20 @@ class Prism_Blender_Functions(object):
                 disabledLayers = set()
                 tempLayers = {}
 
-                #   If * All LAYERS *, will activate all the layers in the .blend
-                if renderLayer == "* All LAYERS *":
-
-                    for vl in bpy.context.scene.view_layers:
-                        vl.use = True
-
                 #   Will disable all layers execpt the selected single layer
-                else:
+                for vl in bpy.context.scene.view_layers:
+                    if vl.name != singleLayer:
+                        disabledLayers.add(vl.name)
+                        vl.use = False
+                        
+                    else:
+                        vl.use = True         
 
-                    for vl in bpy.context.scene.view_layers:
-                        if vl.name != singleLayer:
-                            disabledLayers.add(vl.name)
-                            vl.use = False
-                            
-                        else:
-                            vl.use = True         
-
-                        tempLayers[vl.name] = vl.use            
+                    tempLayers[vl.name] = vl.use            
 
                 rSettings["tempLayers"] = tempLayers
 
         if mode == "Restore":
-
             # Get orig layer config
             origLayers = rSettings.get("origLayers", {})
 
@@ -1119,7 +1117,6 @@ class Prism_Blender_Functions(object):
     
 
 
-
     @err_catcher(name=__name__)
     def sm_render_preSubmit(self, origin, rSettings):
         if origin.chb_resOverride.isChecked():
@@ -1130,11 +1127,16 @@ class Prism_Blender_Functions(object):
 
         nodeAOVs = self.getNodeAOVs()
         imgFormat = origin.cb_format.currentText()
-        if imgFormat in [".exr", ".exrMulti"]:                                          #   EDITED
-            if not nodeAOVs and self.getViewLayerAOVs():
-                fileFormat = "OPEN_EXR_MULTILAYER"
-            else:
-                fileFormat = "OPEN_EXR"
+        # if imgFormat in [".exr", ".exrMulti"]:                                        #   EDITED
+        #     if not nodeAOVs and self.getViewLayerAOVs():
+        #         fileFormat = "OPEN_EXR_MULTILAYER"
+        #     else:
+        #         fileFormat = "OPEN_EXR"
+
+        if imgFormat == ".exr":                                                         #   EDITED
+            fileFormat = "OPEN_EXR"                                                     
+        elif imgFormat == ".exrMulti":
+            fileFormat = "OPEN_EXR_MULTILAYER"
         elif imgFormat == ".png":
             fileFormat = "PNG"
         elif imgFormat == ".jpg":
@@ -1170,7 +1172,7 @@ class Prism_Blender_Functions(object):
         rSettings = self.setupLayers(rSettings, mode="Set")
 
 
-        aovName = rSettings["aovName"]                  #   TODO - deal with * ALL LAYERS *
+        aovName = rSettings["aovName"]
 
         tempOutputName = rSettings["outputName"]
 
@@ -1271,6 +1273,7 @@ class Prism_Blender_Functions(object):
                 bpy.context.scene.render.filepath = tmpOutput
                 if not os.path.exists(os.path.dirname(tmpOutput)):
                     os.makedirs(os.path.dirname(tmpOutput))
+
 
     @err_catcher(name=__name__)
     def sm_render_startLocalRender(self, origin, outputName, rSettings):
