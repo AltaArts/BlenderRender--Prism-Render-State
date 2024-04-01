@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>505</width>
-    <height>1184</height>
+    <height>1205</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -74,6 +74,47 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
+       <widget class="QWidget" name="f_taskname" native="true">
+        <layout class="QHBoxLayout" name="horizontalLayout_10">
+         <property name="leftMargin">
+          <number>9</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>9</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Identifier:       </string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="l_taskName"/>
+         </item>
+         <item>
+          <widget class="QPushButton" name="b_changeTask">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="focusPolicy">
+            <enum>Qt::NoFocus</enum>
+           </property>
+           <property name="text">
+            <string>change</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
        <layout class="QHBoxLayout" name="f_AOV">
         <property name="leftMargin">
          <number>9</number>
@@ -106,6 +147,22 @@
          </widget>
         </item>
        </layout>
+      </item>
+      <item>
+       <spacer name="verticalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>5</height>
+         </size>
+        </property>
+       </spacer>
       </item>
       <item>
        <widget class="QWidget" name="w_context" native="true">
@@ -171,47 +228,6 @@
          </item>
          <item>
           <widget class="QComboBox" name="cb_context"/>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QWidget" name="f_taskname" native="true">
-        <layout class="QHBoxLayout" name="horizontalLayout_10">
-         <property name="leftMargin">
-          <number>9</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>9</number>
-         </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="QLabel" name="label_2">
-           <property name="text">
-            <string>Identifier:       </string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="l_taskName"/>
-         </item>
-         <item>
-          <widget class="QPushButton" name="b_changeTask">
-           <property name="enabled">
-            <bool>true</bool>
-           </property>
-           <property name="focusPolicy">
-            <enum>Qt::NoFocus</enum>
-           </property>
-           <property name="text">
-            <string>change</string>
-           </property>
-          </widget>
          </item>
         </layout>
        </widget>
@@ -923,73 +939,6 @@
        </widget>
       </item>
       <item>
-       <widget class="QWidget" name="f_renderLayer" native="true">
-        <layout class="QHBoxLayout" name="horizontalLayout_5">
-         <property name="leftMargin">
-          <number>9</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>9</number>
-         </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="QLabel" name="label_5">
-           <property name="text">
-            <string>Render layer:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer_6">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="chb_overrideLayers">
-           <property name="text">
-            <string>override</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QComboBox" name="cb_renderLayer">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>250</width>
-             <height>0</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
        <widget class="QWidget" name="w_outPath" native="true">
         <layout class="QHBoxLayout" name="horizontalLayout_16">
          <property name="spacing">
@@ -1055,6 +1004,73 @@
            <property name="minimumSize">
             <size>
              <width>150</width>
+             <height>0</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QWidget" name="f_renderLayer" native="true">
+        <layout class="QHBoxLayout" name="horizontalLayout_5">
+         <property name="leftMargin">
+          <number>9</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>9</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label_5">
+           <property name="text">
+            <string>Render layer:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_6">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="chb_overrideLayers">
+           <property name="text">
+            <string>override</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="cb_renderLayer">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>250</width>
              <height>0</height>
             </size>
            </property>
@@ -1229,7 +1245,7 @@
                <enum>Qt::RightToLeft</enum>
               </property>
               <property name="text">
-               <string>Persitent Data:</string>
+               <string>Persistent Data:</string>
               </property>
              </widget>
             </item>
@@ -1334,13 +1350,66 @@
         </item>
        </layout>
       </item>
+      <item>
+       <widget class="QGroupBox" name="gb_passes">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="title">
+         <string>Render Passes</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_5">
+         <property name="leftMargin">
+          <number>9</number>
+         </property>
+         <property name="topMargin">
+          <number>9</number>
+         </property>
+         <property name="rightMargin">
+          <number>9</number>
+         </property>
+         <property name="bottomMargin">
+          <number>9</number>
+         </property>
+         <item>
+          <widget class="QListWidget" name="lw_passes">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>500</height>
+            </size>
+           </property>
+           <property name="contextMenuPolicy">
+            <enum>Qt::CustomContextMenu</enum>
+           </property>
+           <property name="selectionMode">
+            <enum>QAbstractItemView::ExtendedSelection</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="b_addPasses">
+           <property name="focusPolicy">
+            <enum>Qt::NoFocus</enum>
+           </property>
+           <property name="text">
+            <string>Add Passes</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
    <item>
     <widget class="QGroupBox" name="gb_submit">
      <property name="title">
-      <string>Submit Render Job</string>
+      <string>Submit to Render Farm</string>
      </property>
      <property name="checkable">
       <bool>true</bool>
@@ -1924,56 +1993,6 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="gb_passes">
-     <property name="title">
-      <string>Render Passes</string>
-     </property>
-     <property name="checkable">
-      <bool>true</bool>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_5">
-      <property name="leftMargin">
-       <number>9</number>
-      </property>
-      <property name="topMargin">
-       <number>9</number>
-      </property>
-      <property name="rightMargin">
-       <number>9</number>
-      </property>
-      <property name="bottomMargin">
-       <number>9</number>
-      </property>
-      <item>
-       <widget class="QListWidget" name="lw_passes">
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>500</height>
-         </size>
-        </property>
-        <property name="contextMenuPolicy">
-         <enum>Qt::CustomContextMenu</enum>
-        </property>
-        <property name="selectionMode">
-         <enum>QAbstractItemView::ExtendedSelection</enum>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="b_addPasses">
-        <property name="focusPolicy">
-         <enum>Qt::NoFocus</enum>
-        </property>
-        <property name="text">
-         <string>Add Passes</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
     <widget class="QGroupBox" name="gb_previous">
      <property name="title">
       <string>Previous render</string>
@@ -2070,7 +2089,6 @@
   <tabstop>sp_dlConcurrentTasks</tabstop>
   <tabstop>sp_dlGPUpt</tabstop>
   <tabstop>le_dlGPUdevices</tabstop>
-  <tabstop>gb_passes</tabstop>
   <tabstop>lw_passes</tabstop>
   <tabstop>scrollArea</tabstop>
   <tabstop>b_pathLast</tabstop>
@@ -2084,12 +2102,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>183</x>
-     <y>389</y>
+     <x>229</x>
+     <y>426</y>
     </hint>
     <hint type="destinationlabel">
-     <x>439</x>
-     <y>391</y>
+     <x>485</x>
+     <y>428</y>
     </hint>
    </hints>
   </connection>
@@ -2100,12 +2118,12 @@
    <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>296</x>
-     <y>282</y>
+     <x>342</x>
+     <y>319</y>
     </hint>
     <hint type="destinationlabel">
      <x>150</x>
-     <y>258</y>
+     <y>295</y>
     </hint>
    </hints>
   </connection>
@@ -2116,12 +2134,12 @@
    <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>296</x>
-     <y>282</y>
+     <x>342</x>
+     <y>319</y>
     </hint>
     <hint type="destinationlabel">
-     <x>300</x>
-     <y>258</y>
+     <x>330</x>
+     <y>295</y>
     </hint>
    </hints>
   </connection>
@@ -2132,12 +2150,12 @@
    <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>296</x>
-     <y>282</y>
+     <x>342</x>
+     <y>319</y>
     </hint>
     <hint type="destinationlabel">
-     <x>439</x>
-     <y>258</y>
+     <x>485</x>
+     <y>295</y>
     </hint>
    </hints>
   </connection>

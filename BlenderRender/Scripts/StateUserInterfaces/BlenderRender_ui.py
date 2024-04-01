@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'BlenderRenderhqdkzs.ui'
+## Form generated from reading UI file 'BlenderRenderWExQDJ.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.15.2
 ##
@@ -17,7 +17,7 @@ class Ui_wg_BlenderRender(object):
     def setupUi(self, wg_BlenderRender):
         if not wg_BlenderRender.objectName():
             wg_BlenderRender.setObjectName(u"wg_BlenderRender")
-        wg_BlenderRender.resize(505, 1184)
+        wg_BlenderRender.resize(505, 1205)
         self.verticalLayout = QVBoxLayout(wg_BlenderRender)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
@@ -52,6 +52,31 @@ class Ui_wg_BlenderRender(object):
         self.gb_BlenderRender.setObjectName(u"gb_BlenderRender")
         self.verticalLayout_2 = QVBoxLayout(self.gb_BlenderRender)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.f_taskname = QWidget(self.gb_BlenderRender)
+        self.f_taskname.setObjectName(u"f_taskname")
+        self.horizontalLayout_10 = QHBoxLayout(self.f_taskname)
+        self.horizontalLayout_10.setObjectName(u"horizontalLayout_10")
+        self.horizontalLayout_10.setContentsMargins(9, 0, 9, 0)
+        self.label_2 = QLabel(self.f_taskname)
+        self.label_2.setObjectName(u"label_2")
+
+        self.horizontalLayout_10.addWidget(self.label_2)
+
+        self.l_taskName = QLineEdit(self.f_taskname)
+        self.l_taskName.setObjectName(u"l_taskName")
+
+        self.horizontalLayout_10.addWidget(self.l_taskName)
+
+        self.b_changeTask = QPushButton(self.f_taskname)
+        self.b_changeTask.setObjectName(u"b_changeTask")
+        self.b_changeTask.setEnabled(True)
+        self.b_changeTask.setFocusPolicy(Qt.NoFocus)
+
+        self.horizontalLayout_10.addWidget(self.b_changeTask)
+
+
+        self.verticalLayout_2.addWidget(self.f_taskname)
+
         self.f_AOV = QHBoxLayout()
         self.f_AOV.setObjectName(u"f_AOV")
         self.f_AOV.setContentsMargins(9, -1, 9, -1)
@@ -78,6 +103,10 @@ class Ui_wg_BlenderRender(object):
 
 
         self.verticalLayout_2.addLayout(self.f_AOV)
+
+        self.verticalSpacer_2 = QSpacerItem(20, 5, QSizePolicy.Minimum, QSizePolicy.Fixed)
+
+        self.verticalLayout_2.addItem(self.verticalSpacer_2)
 
         self.w_context = QWidget(self.gb_BlenderRender)
         self.w_context.setObjectName(u"w_context")
@@ -114,31 +143,6 @@ class Ui_wg_BlenderRender(object):
 
 
         self.verticalLayout_2.addWidget(self.w_context)
-
-        self.f_taskname = QWidget(self.gb_BlenderRender)
-        self.f_taskname.setObjectName(u"f_taskname")
-        self.horizontalLayout_10 = QHBoxLayout(self.f_taskname)
-        self.horizontalLayout_10.setObjectName(u"horizontalLayout_10")
-        self.horizontalLayout_10.setContentsMargins(9, 0, 9, 0)
-        self.label_2 = QLabel(self.f_taskname)
-        self.label_2.setObjectName(u"label_2")
-
-        self.horizontalLayout_10.addWidget(self.label_2)
-
-        self.l_taskName = QLineEdit(self.f_taskname)
-        self.l_taskName.setObjectName(u"l_taskName")
-
-        self.horizontalLayout_10.addWidget(self.l_taskName)
-
-        self.b_changeTask = QPushButton(self.f_taskname)
-        self.b_changeTask.setObjectName(u"b_changeTask")
-        self.b_changeTask.setEnabled(True)
-        self.b_changeTask.setFocusPolicy(Qt.NoFocus)
-
-        self.horizontalLayout_10.addWidget(self.b_changeTask)
-
-
-        self.verticalLayout_2.addWidget(self.f_taskname)
 
         self.f_range = QWidget(self.gb_BlenderRender)
         self.f_range.setObjectName(u"f_range")
@@ -470,41 +474,6 @@ class Ui_wg_BlenderRender(object):
 
         self.verticalLayout_2.addWidget(self.w_master)
 
-        self.f_renderLayer = QWidget(self.gb_BlenderRender)
-        self.f_renderLayer.setObjectName(u"f_renderLayer")
-        self.horizontalLayout_5 = QHBoxLayout(self.f_renderLayer)
-        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
-        self.horizontalLayout_5.setContentsMargins(9, 0, 9, 0)
-        self.label_5 = QLabel(self.f_renderLayer)
-        self.label_5.setObjectName(u"label_5")
-
-        self.horizontalLayout_5.addWidget(self.label_5)
-
-        self.horizontalSpacer_6 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.horizontalLayout_5.addItem(self.horizontalSpacer_6)
-
-        self.chb_overrideLayers = QCheckBox(self.f_renderLayer)
-        self.chb_overrideLayers.setObjectName(u"chb_overrideLayers")
-        self.chb_overrideLayers.setChecked(True)
-
-        self.horizontalLayout_5.addWidget(self.chb_overrideLayers)
-
-        self.cb_renderLayer = QComboBox(self.f_renderLayer)
-        self.cb_renderLayer.setObjectName(u"cb_renderLayer")
-        self.cb_renderLayer.setEnabled(False)
-        sizePolicy2 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        sizePolicy2.setHorizontalStretch(0)
-        sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.cb_renderLayer.sizePolicy().hasHeightForWidth())
-        self.cb_renderLayer.setSizePolicy(sizePolicy2)
-        self.cb_renderLayer.setMinimumSize(QSize(250, 0))
-
-        self.horizontalLayout_5.addWidget(self.cb_renderLayer)
-
-
-        self.verticalLayout_2.addWidget(self.f_renderLayer)
-
         self.w_outPath = QWidget(self.gb_BlenderRender)
         self.w_outPath.setObjectName(u"w_outPath")
         self.horizontalLayout_16 = QHBoxLayout(self.w_outPath)
@@ -541,6 +510,41 @@ class Ui_wg_BlenderRender(object):
 
 
         self.verticalLayout_2.addWidget(self.w_outPath)
+
+        self.f_renderLayer = QWidget(self.gb_BlenderRender)
+        self.f_renderLayer.setObjectName(u"f_renderLayer")
+        self.horizontalLayout_5 = QHBoxLayout(self.f_renderLayer)
+        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
+        self.horizontalLayout_5.setContentsMargins(9, 0, 9, 0)
+        self.label_5 = QLabel(self.f_renderLayer)
+        self.label_5.setObjectName(u"label_5")
+
+        self.horizontalLayout_5.addWidget(self.label_5)
+
+        self.horizontalSpacer_6 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout_5.addItem(self.horizontalSpacer_6)
+
+        self.chb_overrideLayers = QCheckBox(self.f_renderLayer)
+        self.chb_overrideLayers.setObjectName(u"chb_overrideLayers")
+        self.chb_overrideLayers.setChecked(True)
+
+        self.horizontalLayout_5.addWidget(self.chb_overrideLayers)
+
+        self.cb_renderLayer = QComboBox(self.f_renderLayer)
+        self.cb_renderLayer.setObjectName(u"cb_renderLayer")
+        self.cb_renderLayer.setEnabled(False)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.cb_renderLayer.sizePolicy().hasHeightForWidth())
+        self.cb_renderLayer.setSizePolicy(sizePolicy2)
+        self.cb_renderLayer.setMinimumSize(QSize(250, 0))
+
+        self.horizontalLayout_5.addWidget(self.cb_renderLayer)
+
+
+        self.verticalLayout_2.addWidget(self.f_renderLayer)
 
         self.verticalSpacer = QSpacerItem(20, 10, QSizePolicy.Minimum, QSizePolicy.Fixed)
 
@@ -717,6 +721,30 @@ class Ui_wg_BlenderRender(object):
 
 
         self.verticalLayout_2.addLayout(self.f_midPanelLwr)
+
+        self.gb_passes = QGroupBox(self.gb_BlenderRender)
+        self.gb_passes.setObjectName(u"gb_passes")
+        self.gb_passes.setEnabled(True)
+        self.gb_passes.setCheckable(True)
+        self.verticalLayout_5 = QVBoxLayout(self.gb_passes)
+        self.verticalLayout_5.setObjectName(u"verticalLayout_5")
+        self.verticalLayout_5.setContentsMargins(9, 9, 9, 9)
+        self.lw_passes = QListWidget(self.gb_passes)
+        self.lw_passes.setObjectName(u"lw_passes")
+        self.lw_passes.setMaximumSize(QSize(16777215, 500))
+        self.lw_passes.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.lw_passes.setSelectionMode(QAbstractItemView.ExtendedSelection)
+
+        self.verticalLayout_5.addWidget(self.lw_passes)
+
+        self.b_addPasses = QPushButton(self.gb_passes)
+        self.b_addPasses.setObjectName(u"b_addPasses")
+        self.b_addPasses.setFocusPolicy(Qt.NoFocus)
+
+        self.verticalLayout_5.addWidget(self.b_addPasses)
+
+
+        self.verticalLayout_2.addWidget(self.gb_passes)
 
 
         self.verticalLayout.addWidget(self.gb_BlenderRender)
@@ -1012,29 +1040,6 @@ class Ui_wg_BlenderRender(object):
 
         self.verticalLayout.addWidget(self.gb_submit)
 
-        self.gb_passes = QGroupBox(wg_BlenderRender)
-        self.gb_passes.setObjectName(u"gb_passes")
-        self.gb_passes.setCheckable(True)
-        self.verticalLayout_5 = QVBoxLayout(self.gb_passes)
-        self.verticalLayout_5.setObjectName(u"verticalLayout_5")
-        self.verticalLayout_5.setContentsMargins(9, 9, 9, 9)
-        self.lw_passes = QListWidget(self.gb_passes)
-        self.lw_passes.setObjectName(u"lw_passes")
-        self.lw_passes.setMaximumSize(QSize(16777215, 500))
-        self.lw_passes.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.lw_passes.setSelectionMode(QAbstractItemView.ExtendedSelection)
-
-        self.verticalLayout_5.addWidget(self.lw_passes)
-
-        self.b_addPasses = QPushButton(self.gb_passes)
-        self.b_addPasses.setObjectName(u"b_addPasses")
-        self.b_addPasses.setFocusPolicy(Qt.NoFocus)
-
-        self.verticalLayout_5.addWidget(self.b_addPasses)
-
-
-        self.verticalLayout.addWidget(self.gb_passes)
-
         self.gb_previous = QGroupBox(wg_BlenderRender)
         self.gb_previous.setObjectName(u"gb_previous")
         self.gb_previous.setCheckable(False)
@@ -1096,8 +1101,7 @@ class Ui_wg_BlenderRender(object):
         QWidget.setTabOrder(self.e_osSlaves, self.sp_dlConcurrentTasks)
         QWidget.setTabOrder(self.sp_dlConcurrentTasks, self.sp_dlGPUpt)
         QWidget.setTabOrder(self.sp_dlGPUpt, self.le_dlGPUdevices)
-        QWidget.setTabOrder(self.le_dlGPUdevices, self.gb_passes)
-        QWidget.setTabOrder(self.gb_passes, self.lw_passes)
+        QWidget.setTabOrder(self.le_dlGPUdevices, self.lw_passes)
         QWidget.setTabOrder(self.lw_passes, self.scrollArea)
         QWidget.setTabOrder(self.scrollArea, self.b_pathLast)
 
@@ -1115,13 +1119,13 @@ class Ui_wg_BlenderRender(object):
         self.l_name.setText(QCoreApplication.translate("wg_BlenderRender", u"Name:", None))
         self.l_class.setText(QCoreApplication.translate("wg_BlenderRender", u"Blender Render", None))
         self.gb_BlenderRender.setTitle(QCoreApplication.translate("wg_BlenderRender", u"General", None))
+        self.label_2.setText(QCoreApplication.translate("wg_BlenderRender", u"Identifier:       ", None))
+        self.b_changeTask.setText(QCoreApplication.translate("wg_BlenderRender", u"change", None))
         self.l_AOV.setText(QCoreApplication.translate("wg_BlenderRender", u"AOV Name:     ", None))
         self.chb_customAOV.setText(QCoreApplication.translate("wg_BlenderRender", u"Custom", None))
         self.label_7.setText(QCoreApplication.translate("wg_BlenderRender", u"Context:", None))
         self.l_context.setText("")
         self.b_context.setText(QCoreApplication.translate("wg_BlenderRender", u"Select", None))
-        self.label_2.setText(QCoreApplication.translate("wg_BlenderRender", u"Identifier:       ", None))
-        self.b_changeTask.setText(QCoreApplication.translate("wg_BlenderRender", u"change", None))
         self.label_3.setText(QCoreApplication.translate("wg_BlenderRender", u"Framerange:", None))
         self.l_rangeStart.setText(QCoreApplication.translate("wg_BlenderRender", u"1001", None))
         self.l_rangeEndInfo.setText(QCoreApplication.translate("wg_BlenderRender", u"End:", None))
@@ -1138,17 +1142,19 @@ class Ui_wg_BlenderRender(object):
         self.l_renderPreset.setText(QCoreApplication.translate("wg_BlenderRender", u"Rendersettings preset:", None))
         self.chb_renderPreset.setText("")
         self.l_outPath_2.setText(QCoreApplication.translate("wg_BlenderRender", u"Master Version:", None))
-        self.label_5.setText(QCoreApplication.translate("wg_BlenderRender", u"Render layer:", None))
-        self.chb_overrideLayers.setText(QCoreApplication.translate("wg_BlenderRender", u"override", None))
         self.l_samples.setText(QCoreApplication.translate("wg_BlenderRender", u"Samples:  ", None))
         self.l_outPath.setText(QCoreApplication.translate("wg_BlenderRender", u"Location:  ", None))
+        self.label_5.setText(QCoreApplication.translate("wg_BlenderRender", u"Render layer:", None))
+        self.chb_overrideLayers.setText(QCoreApplication.translate("wg_BlenderRender", u"override", None))
         self.l_format.setText(QCoreApplication.translate("wg_BlenderRender", u"Format:  ", None))
         self.chb_compositor.setText(QCoreApplication.translate("wg_BlenderRender", u"Compositor:  ", None))
         self.l_fileCompress.setText(QCoreApplication.translate("wg_BlenderRender", u"Codec:     ", None))
-        self.chb_persData.setText(QCoreApplication.translate("wg_BlenderRender", u"Persitent Data:", None))
+        self.chb_persData.setText(QCoreApplication.translate("wg_BlenderRender", u"Persistent Data:", None))
         self.l_bitDepth.setText(QCoreApplication.translate("wg_BlenderRender", u"Bit Depth:  ", None))
         self.chb_alpha.setText(QCoreApplication.translate("wg_BlenderRender", u"Alpha:  ", None))
-        self.gb_submit.setTitle(QCoreApplication.translate("wg_BlenderRender", u"Submit Render Job", None))
+        self.gb_passes.setTitle(QCoreApplication.translate("wg_BlenderRender", u"Render Passes", None))
+        self.b_addPasses.setText(QCoreApplication.translate("wg_BlenderRender", u"Add Passes", None))
+        self.gb_submit.setTitle(QCoreApplication.translate("wg_BlenderRender", u"Submit to Render Farm", None))
         self.l_manager.setText(QCoreApplication.translate("wg_BlenderRender", u"Manager:", None))
         self.label_18.setText(QCoreApplication.translate("wg_BlenderRender", u"Submit suspended:", None))
         self.chb_rjSuspended.setText("")
@@ -1167,8 +1173,6 @@ class Ui_wg_BlenderRender(object):
         self.l_dlGPUpt.setText(QCoreApplication.translate("wg_BlenderRender", u"GPUs Per Task:", None))
         self.l_dlGPUdevices.setText(QCoreApplication.translate("wg_BlenderRender", u"Select GPU Devices:", None))
         self.le_dlGPUdevices.setPlaceholderText(QCoreApplication.translate("wg_BlenderRender", u"Enter Valid GPU Device Id(s)", None))
-        self.gb_passes.setTitle(QCoreApplication.translate("wg_BlenderRender", u"Render Passes", None))
-        self.b_addPasses.setText(QCoreApplication.translate("wg_BlenderRender", u"Add Passes", None))
         self.gb_previous.setTitle(QCoreApplication.translate("wg_BlenderRender", u"Previous render", None))
         self.l_pathLast.setText(QCoreApplication.translate("wg_BlenderRender", u"None", None))
         self.b_pathLast.setText(QCoreApplication.translate("wg_BlenderRender", u"...", None))
