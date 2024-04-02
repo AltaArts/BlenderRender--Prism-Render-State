@@ -130,14 +130,14 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         self.formatOptions = {
             ".exr": {
                 "bitDepths": ["16", "32"],
-                "codec": ["None", "Zip", "ZipS", "DWAA", "DWAB"],
+                "codec": ["NONE", "PIZ", "RLE", "ZIP", "ZIPS", "DWAA", "DWAB"],
                 "compressWidget": self.cb_exrCodec,
                 "compressLabel": "Codec: ",
                 "alpha": True,
                 },
             ".exrMulti": {
                 "bitDepths": ["16", "32"],
-                "codec": ["None", "Zip", "ZipS", "DWAA", "DWAB"],
+                "codec": ["NONE", "PIZ", "RLE", "ZIP", "ZIPS", "DWAA", "DWAB"],
                 "compressWidget": self.cb_exrCodec,
                 "compressLabel": "Codec: ",
                 "alpha": True,
@@ -201,6 +201,8 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         self.e_xRez.setStyleSheet("background: transparent;")
         self.e_yRez.setStyleSheet("background: transparent;")
 
+        self.setToolTips()
+
         #   If State exists in .blend, it will load it
         if stateData is not None:
             self.loadStateData(stateData)
@@ -240,8 +242,8 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         self.cb_master.activated.connect(self.stateManager.saveStatesToScene)
         self.e_samples.textChanged.connect(self.stateManager.saveStatesToScene)
         self.cb_outPath.activated[str].connect(self.stateManager.saveStatesToScene)
-        self.chb_overrideLayers.toggled.connect(self.refreshPasses)
-        self.cb_renderLayer.currentIndexChanged.connect(self.refreshPasses)
+        self.chb_overrideLayers.toggled.connect(self.updateUi)
+        self.cb_renderLayer.currentIndexChanged.connect(self.updateUi)
         self.chb_compositor.toggled.connect(self.stateManager.saveStatesToScene)            
         self.chb_persData.toggled.connect(self.stateManager.saveStatesToScene)              
         self.cb_format.currentIndexChanged.connect(self.setupFormatOptions)                 
@@ -273,6 +275,98 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         self.lw_passes.itemDoubleClicked.connect(
             lambda x: self.core.appPlugin.sm_render_openPasses(self)
             )
+
+
+    @err_catcher(name=__name__)
+    def setToolTips(self):
+
+        tip = "Media Identifier.  Taskname is default."
+        self.l_taskName.setToolTip(tip)
+
+        tip = "Click to change Identifier.  This will also rename the State name."
+        self.b_changeTask.setToolTip(tip)
+
+        tip = ("Auto-generated AOV name based on output file type and alpha.\n"
+               "EXR multilayer:  RGB-Data or RGBA-Data\n"
+               "EXR:  RGB or RGBA\n"
+               "PNG:  RGB or RGBA\n"
+               "JPG:  beauty"
+               )
+        self.e_aovNameAuto.setToolTip(tip)
+
+        tip = "Custom AOV name."
+        self.e_aovNameCustom.setToolTip(tip)
+
+        tip = "Toggle to allow creating custom AOV name."
+        self.chb_customAOV.setToolTip(tip)
+
+        tip = ("Frame range type to be rendered.\n"
+               "Defaults to:\n"
+               "Asset: single frame\n"
+               "Shot: shot framereange"
+               )
+        self.cb_rangeType.setToolTip(tip)
+
+        tip = "Camera to be rendered.  Active scene camera is default."
+        self.cb_cam.setToolTip(tip)
+
+        tip = "Use render resolution presets."
+        self.chb_resOverride.setToolTip(tip)
+
+        tip = "Master version method.  Default is Do Not Update."
+        self.cb_master.setToolTip(tip)
+
+        tip = "Render samples override.  Default is from scenefile."
+        self.e_samples.setToolTip(tip)
+
+        tip = "Override of view layer to be rendered.  Unchecked will render view layers as is in scenefile."
+        self.chb_overrideLayers.setToolTip(tip)
+
+        tip = "File output type.  EXR multilayer will enable passes."
+        self.cb_format.setToolTip(tip)
+
+        tip = ("Compression Codec to be used for EXR:\n"
+               "Zip:  lossless\n"
+               "ZipS: lossless\n"
+               "PIZ:  lossless\n"
+               "RLE:  lossless\n"
+               "DWAA: lossy\n"
+               "DWAB: lossy"
+              )
+        self.cb_exrCodec.setToolTip(tip)
+
+        tip = ("PNG lossless compression ratio.\n"
+               "Higher is smaller but slower."
+              )
+        self.sp_pngCompress.setToolTip(tip)
+
+        tip = ("JPG quality.\n"
+               "Higher is larger but better quality."
+              )
+        self.sp_jpegQual.setToolTip(tip)
+
+        tip = "Bit depth for EXR and PNG output types."
+        self.cb_exrBitDepth.setToolTip(tip)
+        self.cb_pngBitDepth.setToolTip(tip)
+
+        tip = "Toggle to use or bypass the Compositor."
+        self.chb_compositor.setToolTip(tip)
+
+        tip = ("Use Persistent Data.\n"
+               "May speed up render times, but can cause glitches with motion blur."
+              )
+        self.chb_persData.setToolTip(tip)
+
+        tip = "Toggle to use an Alpha channel."
+        self.chb_alpha.setToolTip(tip)
+
+        tip = ("Selected AOV passes.  Right-click to delete.\n\n"
+               "If using Render Layer override, passes will be per layer."
+              )
+        self.lw_passes.setToolTip(tip)
+
+        tip = "Submit job to Render Farm."
+        self.gb_submit.setToolTip(tip)
 
 
     @err_catcher(name=__name__)
@@ -310,22 +404,26 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         if "renderpresetoverride" in data:
             res = eval(data["renderpresetoverride"])
             self.chb_renderPreset.setChecked(res)
+
         if "currentrenderpreset" in data:
             idx = self.cb_renderPreset.findText(data["currentrenderpreset"])
             if idx != -1:
                 self.cb_renderPreset.setCurrentIndex(idx)
                 self.stateManager.saveStatesToScene()
+
         if "rangeType" in data:
             idx = self.cb_rangeType.findText(data["rangeType"])
             if idx != -1:
                 self.cb_rangeType.setCurrentIndex(idx)
                 self.updateRange()
+
         if "startframe" in data:
             self.sp_rangeStart.setValue(int(data["startframe"]))
         if "endframe" in data:
             self.sp_rangeEnd.setValue(int(data["endframe"]))
         if "frameExpression" in data:
             self.le_frameExpression.setText(data["frameExpression"])
+
         if "currentcam" in data:
             camName = getattr(self.core.appPlugin, "getCamName", lambda x, y: "")(
                 self, data["currentcam"]
@@ -335,29 +433,36 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
                 self.curCam = self.camlist[idx]
                 self.cb_cam.setCurrentIndex(idx)
                 self.stateManager.saveStatesToScene()
+
         if "resoverride" in data:
             res = eval(data["resoverride"])
             self.chb_resOverride.setChecked(res[0])
             self.sp_resWidth.setValue(res[1])
             self.sp_resHeight.setValue(res[2])
+
         if "masterVersion" in data:
             idx = self.cb_master.findText(data["masterVersion"])
             if idx != -1:
                 self.cb_master.setCurrentIndex(idx)
+
         if "renderSamples" in data:                                         
             self.e_samples.setText(data["renderSamples"])
+
         if "curoutputpath" in data:
             idx = self.cb_outPath.findText(data["curoutputpath"])
             if idx != -1:
                 self.cb_outPath.setCurrentIndex(idx)
+
         if "overrideLayers" in data:                                        
             self.chb_overrideLayers.setChecked(data["overrideLayers"])
             self.cb_renderLayer.setEnabled(data["overrideLayers"])
-        if "renderlayer" in data:                                                           #    TODO
+
+        if "renderlayer" in data:
             idx = self.cb_renderLayer.findText(data["renderlayer"])
             if idx != -1:
                 self.cb_renderLayer.setCurrentIndex(idx)
                 self.stateManager.saveStatesToScene()
+
         if "outputFormat" in data:
             idx = self.cb_format.findText(data["outputFormat"])
             if idx != -1:
@@ -543,6 +648,33 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         self.refreshSubmitUi()
         self.refreshPasses()
 
+        if self.chb_resOverride.isChecked():
+            tip1 = tip2 = "Disabled"
+            tip3 = "Final render resolution."
+            tip4 = "Select Preset"
+        else:
+            tip1 = "Render resolution scaling for final render."
+            tip2 = "Final render resolution based on scaling of the resolution of the scenefile."
+            tip3 = tip4 = "Disabled"
+        self.cb_scaling.setToolTip(tip1)
+        self.e_xRez.setToolTip(tip2)
+        self.e_yRez.setToolTip(tip2)
+        self.sp_resWidth.setToolTip(tip3)
+        self.sp_resHeight.setToolTip(tip3)
+        self.b_resPresets.setToolTip(tip4)
+
+        if self.chb_overrideLayers.isChecked():
+            tip = "View Layer to be rendered."
+        else:
+            tip = "Disabled"
+        self.cb_renderLayer.setToolTip(tip)
+
+        if self.cb_format.currentText() == ".exrMulti":
+            tip = "Opens dialog to select AOV passes"
+        else:
+            tip = "Select EXR multilayer to enable AOV passes"
+        self.b_addPasses.setToolTip(tip)
+
         self.nameChanged(self.e_name.text())
         self.aovNameSetup()
         self.stateManager.saveStatesToScene()
@@ -623,13 +755,14 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         self.gb_passes.setEnabled(isEXRmulti)
         self.lw_passes.setVisible(isEXRmulti)
 
-        aovName = "beauty"
         if fileType in [".exr", ".exrMulti", ".png"]:
             aovName = "RGB"
-        if useAlpha:
-            aovName = aovName + "A"
-        if isEXRmulti:
-            aovName = aovName + "-Data"
+            if useAlpha:
+                aovName = aovName + "A"
+            if isEXRmulti:
+                aovName = aovName + "-Data"
+        else:
+            aovName = "beauty"
         self.e_aovNameAuto.setText(aovName)
 
         self.stateManager.saveStatesToScene()
@@ -923,6 +1056,8 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         self.sp_resHeight.setEnabled(checked)
         self.b_resPresets.setEnabled(checked)
 
+        self.updateUi()
+
         self.stateManager.saveStatesToScene()
 
 
@@ -1073,14 +1208,14 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
     
 
     @err_catcher(name=__name__)                         
-    def getRenderLayers(self, mode="current"):
+    def getRenderLayers(self, command="current"):
         renderLayers, currentLayer = self.core.appPlugin.getRenderLayers()
 
-        if mode == "current":
+        if command == "current":
             return currentLayer
-        elif mode == "all":
+        elif command == "all":
             return renderLayers
-        elif mode == "load":
+        elif command == "load":
             self.cb_renderLayer.addItems(renderLayers)
 
     @err_catcher(name=__name__)
@@ -1436,7 +1571,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         rangeType = self.cb_rangeType.currentText()
         frames = self.getFrameRange(rangeType)
 
-        if rangeType not in ["Expression", "FML", "FMMML"]:                     #   EDITED
+        if rangeType not in ["Expression", "FML", "FMMML"]:
             frames = frames[0]
 
         if frames is None or frames == []:
