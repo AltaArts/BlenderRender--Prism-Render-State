@@ -191,8 +191,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         if self.cb_manager.count() == 0:
             self.gb_submit.setVisible(False)
 
-        self.getRenderLayers()               
-
+        self.getRenderLayers("load")               
         self.managerChanged(True)
 
         self.e_fml.setStyleSheet("border: none;")
@@ -241,6 +240,8 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         self.cb_master.activated.connect(self.stateManager.saveStatesToScene)
         self.e_samples.textChanged.connect(self.stateManager.saveStatesToScene)
         self.cb_outPath.activated[str].connect(self.stateManager.saveStatesToScene)
+        self.chb_overrideLayers.toggled.connect(self.refreshPasses)
+        self.cb_renderLayer.currentIndexChanged.connect(self.refreshPasses)
         self.chb_compositor.toggled.connect(self.stateManager.saveStatesToScene)            
         self.chb_persData.toggled.connect(self.stateManager.saveStatesToScene)              
         self.cb_format.currentIndexChanged.connect(self.setupFormatOptions)                 
@@ -394,13 +395,6 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         if "persData" in data:                                              
             self.chb_persData.setChecked(data["persData"])     
 
-        if "aovPasses" in data:
-            # Clear the existing items in the QListWidget if needed
-            self.lw_passes.clear()
-            # Add items from passList to the QListWidget
-            for passItem in data["aovPasses"]:
-                self.lw_passes.addItem(passItem)
-
         if "submitrender" in data:
             self.gb_submit.setChecked(eval(data["submitrender"]))
 
@@ -488,7 +482,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
         self.chb_overrideLayers.setChecked(False)                         
 
-        curLayName = self.getRenderLayers(curLayer=True)
+        curLayName = self.getRenderLayers("current")
         curIdx = self.cb_renderLayer.findText(curLayName)
         if curIdx != -1:
             self.cb_renderLayer.setCurrentIndex(curIdx)
@@ -547,7 +541,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
             self.w_master.setVisible(False)
 
         self.refreshSubmitUi()
-        getattr(self.core.appPlugin, "sm_render_refreshPasses", lambda x: None)(self)
+        self.refreshPasses()
 
         self.nameChanged(self.e_name.text())
         self.aovNameSetup()
@@ -850,11 +844,6 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
 
     @err_catcher(name=__name__)
-    def getFormat(self):
-        self.cb_format.currentText()
-
-
-    @err_catcher(name=__name__)
     def setFormat(self, fmt):
         idx = self.cb_format.findText(fmt)
         if idx != -1:
@@ -1084,14 +1073,15 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
     
 
     @err_catcher(name=__name__)                         
-    def getRenderLayers(self, curLayer=False):
+    def getRenderLayers(self, mode="current"):
         renderLayers, currentLayer = self.core.appPlugin.getRenderLayers()
 
-        if curLayer:
+        if mode == "current":
             return currentLayer
-        else:
+        elif mode == "all":
+            return renderLayers
+        elif mode == "load":
             self.cb_renderLayer.addItems(renderLayers)
-    
 
     @err_catcher(name=__name__)
     def refreshContext(self):
@@ -1283,17 +1273,27 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
 
     @err_catcher(name=__name__)
+    def curOverrideLayer(self):
+        return self.cb_renderLayer.currentText()
+
+
+    @err_catcher(name=__name__)
+    def refreshPasses(self, index=None):
+
+        renderlayer = self.curOverrideLayer()
+
+        self.core.appPlugin.sm_render_refreshPasses(self, renderlayer)
+
+
+    @err_catcher(name=__name__)
     def showPasses(self):
 
-        # if self.chb_overrideLayers.isChecked():
-        #     renderLayer = self.cb_renderLayer.currentText()
-        # else:
-        #     renderLayer = "**ALL**"
-
+        curRenderLayer = self.curOverrideLayer()
+        renderLayers =  self.getRenderLayers("all")
 
         steps = getattr(
             self.core.appPlugin, "sm_render_getRenderPasses", lambda x: None
-        )(self)
+            )(self, curRenderLayer)
 
         if steps is None or len(steps) == 0:
             return False
@@ -1325,19 +1325,23 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
         if result != 1:
             return False
-        
-        # for i in self.il.tw_steps.selectedItems():
-        #     self.core.popup(f"i: {i}")                                      #    TESTING
-        #     if i.column() == 0:
-        #         self.lw_passes.addItem(i.text())
+
+        if self.chb_overrideLayers.isChecked():
+
+            for i in self.il.tw_steps.selectedItems():
+                if i.column() == 0:
+                    self.core.appPlugin.sm_render_addRenderPass(
+                        self, passName=i.text(), steps=steps, renderLayer=curRenderLayer
+                    )
+        else:
+            for layer in renderLayers:
+
+                for i in self.il.tw_steps.selectedItems():
+                    if i.column() == 0:
+                        self.core.appPlugin.sm_render_addRenderPass(
+                            self, passName=i.text(), steps=steps, renderLayer=layer)
 
 
-
-        for i in self.il.tw_steps.selectedItems():
-            if i.column() == 0:
-                self.core.appPlugin.sm_render_addRenderPass(
-                    self, passName=i.text(), steps=steps
-                )
 
         self.updateUi()
         self.stateManager.saveStatesToScene()
@@ -1361,9 +1365,22 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
     @err_catcher(name=__name__)
     def deleteAOVs(self):
-        items = self.lw_passes.selectedItems()
-        for i in items:
-            self.core.appPlugin.removeAOV(i.text())
+
+        renderLayer = self.curOverrideLayer()
+        renderLayers = self.getRenderLayers("all")
+
+        if self.chb_overrideLayers.isChecked():
+
+            items = self.lw_passes.selectedItems()
+            for i in items:
+                self.core.appPlugin.removeAOV(i.text(), renderLayer)
+
+        else:
+            for layer in renderLayers:
+                items = self.lw_passes.selectedItems()
+                for i in items:
+                    self.core.appPlugin.removeAOV(i.text(), layer)
+                    
         self.updateUi()
 
 
@@ -1723,23 +1740,12 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
     @err_catcher(name=__name__)
     def getStateProps(self):
 
-        passList = []
-
-        # Iterate through each item in the QListWidget
-        for row in range(self.lw_passes.count()):
-            passItem = self.lw_passes.item(row)
-            if passItem is not None:
-                passList.append(passItem.text())
-
         stateProps = {
             "stateName": self.e_name.text(),
             "contextType": self.getContextType(),
             "customContext": self.customContext,
-
             "useCustomAOV": self.chb_customAOV.isChecked(),
-            "aovNameAuto": self.e_aovNameAuto.text(),                           #   TODO
-            "aovNameCustom": self.e_aovNameCustom.text(),                       #   TODO
-
+            "aovNameCustom": self.e_aovNameCustom.text(),
             "taskname": self.getTaskname(),
             "rezScale": str(self.cb_scaling.currentText()),                     
             "renderpresetoverride": str(self.chb_renderPreset.isChecked()),
@@ -1770,7 +1776,6 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
             "pngComp": self.sp_pngCompress.value(),                             
             "jpegQual": self.sp_jpegQual.value(),                               
             "useAlpha": self.chb_alpha.isChecked(),
-            "aovPasses": passList,
             "submitrender": str(self.gb_submit.isChecked()),
             "rjmanager": str(self.cb_manager.currentText()),
             "rjprio": self.sp_rjPrio.value(),
