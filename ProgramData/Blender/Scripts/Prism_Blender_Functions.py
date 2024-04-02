@@ -796,8 +796,9 @@ class Prism_Blender_Functions(object):
 
         origin.b_osSlaves.setMinimumWidth(50 * self.core.uiScaleFactor)
 
+
     @err_catcher(name=__name__)
-    def sm_render_refreshPasses(self, origin, renderLayer):
+    def sm_render_refreshPasses(self, origin, renderLayer):                     #   EDITED
         origin.lw_passes.clear()
 
         passNames = self.getNodeAOVs()
@@ -805,11 +806,12 @@ class Prism_Blender_Functions(object):
         origin.b_addPasses.setVisible(not passNames)
         self.plugin.canDeleteRenderPasses = bool(not passNames)
         if not passNames:
-            passNames = self.getViewLayerAOVs(renderLayer)
+            passNames = self.getViewLayerAOVs(renderLayer)                      #   EDITED
             logger.debug("viewlayer aovs: %s" % passNames)
 
         if passNames:
             origin.lw_passes.addItems(passNames)
+
 
     @err_catcher(name=__name__)
     def getNodeAOVs(self):
@@ -849,10 +851,11 @@ class Prism_Blender_Functions(object):
 
         return passNames
 
-    @err_catcher(name=__name__)
+
+    @err_catcher(name=__name__)                                         #   EDITED
     def getViewLayerAOVs(self, renderLayer):
-        availableAOVs = self.getAvailableAOVs(renderLayer)
-        curlayer = bpy.context.scene.view_layers[renderLayer]
+        availableAOVs = self.getAvailableAOVs(renderLayer)              #   EDITED
+        curlayer = bpy.context.scene.view_layers[renderLayer]           #   EDITED
         aovNames = []
         for aa in availableAOVs:
             val = None
@@ -866,9 +869,9 @@ class Prism_Blender_Functions(object):
 
         return aovNames
 
-    @err_catcher(name=__name__)
-    def getAvailableAOVs(self, renderLayer):
-        curlayer = bpy.context.scene.view_layers[renderLayer]
+    @err_catcher(name=__name__)                 
+    def getAvailableAOVs(self, renderLayer):                            #   EDITED
+        curlayer = bpy.context.scene.view_layers[renderLayer]           #   EDITED
         aovParms = [x for x in dir(curlayer) if x.startswith("use_pass_")]
         aovParms += [
             "cycles." + x for x in dir(curlayer.cycles) if x.startswith("use_pass_")
@@ -900,7 +903,7 @@ class Prism_Blender_Functions(object):
         return bool(self.getNodeAOVs())
 
     @err_catcher(name=__name__)
-    def removeAOV(self, aovName, renderLayer):
+    def removeAOV(self, aovName, renderLayer):                          #   EDITED
         if self.useNodeAOVs():
             rlayerNodes = [
                 x for x in bpy.context.scene.node_tree.nodes if x.type == "R_LAYERS"
@@ -934,17 +937,17 @@ class Prism_Blender_Functions(object):
                                     i.to_node.inputs.remove(i.to_node.inputs[idx])
                                     return
         else:
-            self.enableViewLayerAOV(aovName, renderLayer, enable=False)
+            self.enableViewLayerAOV(aovName, renderLayer, enable=False)             #   EDITED
 
     @err_catcher(name=__name__)
-    def enableViewLayerAOV(self, name, renderLayer, enable=True):
-        aa = self.getAvailableAOVs(renderLayer)
+    def enableViewLayerAOV(self, name, renderLayer, enable=True):                   #   EDITED
+        aa = self.getAvailableAOVs(renderLayer)                                     #   EDITED
         curAOV = [x for x in aa if x["name"] == name]
         if not curAOV:
             return
 
         curAOV = curAOV[0]
-        curlayer = bpy.context.scene.view_layers[renderLayer]
+        curlayer = bpy.context.scene.view_layers[renderLayer]                       #   EDITED
 
         attrs = curAOV["parm"].split(".")
         obj = curlayer
@@ -1217,7 +1220,7 @@ class Prism_Blender_Functions(object):
                     passName = i.from_socket.name
 
                     if passName == "Image":
-                        passName = "beauty"                                 #   TODO
+                        passName = "beauty"
 
                     if i.from_node.type == "R_LAYERS":
                         if len(rlayerNodes) > 1:
@@ -1248,7 +1251,7 @@ class Prism_Blender_Functions(object):
                         passName,
                         os.path.splitext(os.path.basename(rSettings["outputName"]))[
                             0
-                        ].replace("beauty", passName)                               #   TODO
+                        ].replace("beauty", passName)
                         + ext,
                     )
                     newOutputPath = os.path.abspath(
@@ -1258,7 +1261,7 @@ class Prism_Blender_Functions(object):
                             passName,
                             os.path.splitext(os.path.basename(rSettings["outputName"]))[
                                 0
-                            ].replace("beauty", passName)                           #   TODO
+                            ].replace("beauty", passName)
                             + ext,
                         )
                     )
@@ -1308,7 +1311,7 @@ class Prism_Blender_Functions(object):
 
 
 #################################################################################
-#    vvvvvvvvvvvvvvvvvvvvv           ADDED         vvvvvvvvvvvvvvvvvvvvvvvvvvvvvv           #   NEEDED???
+#    vvvvvvvvvvvvvvvvvvvvv           ADDED         vvvvvvvvvvvvvvvvvvvvvvvvvvvvvv           #   NEEDED with MonkeyPatch???
 
             #   Adds modified scene options to ctx context for local render.
 
@@ -1377,7 +1380,7 @@ class Prism_Blender_Functions(object):
                 singleFrame = rSettings["rangeType"] == "Single Frame"
                 if bpy.app.version < (4, 0, 0):
 
-                    self.nextRenderslot()                           #   ADDED
+                    self.nextRenderslot()                               #   ADDED
 
 
                     bpy.ops.render.render(
@@ -1567,17 +1570,17 @@ class Prism_Blender_Functions(object):
         return [self.core.getCurrentFileName()]
 
     @err_catcher(name=__name__)
-    def sm_render_getRenderPasses(self, origin, renderLayer):
+    def sm_render_getRenderPasses(self, origin, renderLayer):                           #   EDITED
         aovNames = [
             x["name"]
-            for x in self.getAvailableAOVs(renderLayer)
-            if x["name"] not in self.getViewLayerAOVs(renderLayer)
+            for x in self.getAvailableAOVs(renderLayer)                                 #   EDITED
+            if x["name"] not in self.getViewLayerAOVs(renderLayer)                      #   EDITED
         ]
         return aovNames
 
     @err_catcher(name=__name__)
-    def sm_render_addRenderPass(self, origin, passName, steps, renderLayer):
-        self.enableViewLayerAOV(passName, renderLayer)
+    def sm_render_addRenderPass(self, origin, passName, steps, renderLayer):            #   EDITED
+        self.enableViewLayerAOV(passName, renderLayer)                                  #   EDITED
 
     @err_catcher(name=__name__)
     def sm_render_managerChanged(self, origin, isPandora):
