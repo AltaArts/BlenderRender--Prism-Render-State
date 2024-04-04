@@ -37,6 +37,10 @@ Once added, you can either restart Prism2 (prefered) or select the "Add existing
 ![Settings_Plugin_Menubar](https://github.com/AltaArts/BlenderRender--Prism-Render-State/assets/86539171/252061e3-9b15-4683-9e23-80bf872d6595)
 
 
+## **Disabling**
+
+If a user wants to disable BlenderRender, goto Settings->plugins and uncheck BlenderRender.  Then either restart Prism2 or click the "Reload all plugins" to reload the Blender plugin.
+
 ## **Issues / Suggestions**
 
 For any bug reports or suggestions, please add to the GitHub repo.
