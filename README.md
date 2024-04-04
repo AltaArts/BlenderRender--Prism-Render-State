@@ -10,7 +10,21 @@ https://prism-pipeline.com/
 
 ## **Plugin Usage**
 
-BlenderRender adds a new state to the StateManager.  This state adds additional functionality to Prism's Blender rendering compared to the more generic default ImageRender.
+![Overview](https://github.com/AltaArts/BlenderRender--Prism-Render-State/assets/86539171/405a7826-9605-4690-9ef3-bec9be5b864f)
+
+BlenderRender adds a new state to the StateManager.  This state adds additional functionality to Prism's Blender rendering compared to the more generic default ImageRender.  The options selected in the state will not affect to scenefile itself.
+
+Note:  When submitting to a render farm, the Prism option "Submit scenefiles together with jobs" must be checked in order for the farm to use the temporary edited scenefile.
+
+Features:
+
+- Blender view layers supported.  An override checkbox allows for single layers to be rendered, or if unchecked all layers will be used as normal.
+- Render resolution scaling.
+- Option to use or bypass Blenders compositor.
+- Option to render an Alpha channel or not.  This helps reduce un-needed file sizes.
+- Expanded options for output file types and codecs.
+- Re-ordered interface
+- 
 
 
 
