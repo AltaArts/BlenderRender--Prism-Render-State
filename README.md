@@ -7,23 +7,29 @@ You can find more information on the website:
 
 https://prism-pipeline.com/
 
+![Overview](https://github.com/AltaArts/BlenderRender--Prism-Render-State/assets/86539171/405a7826-9605-4690-9ef3-bec9be5b864f)
+
 
 ## **Plugin Usage**
-
-![Overview](https://github.com/AltaArts/BlenderRender--Prism-Render-State/assets/86539171/405a7826-9605-4690-9ef3-bec9be5b864f)
 
 BlenderRender adds a new state to the StateManager.  This state adds additional functionality to Prism's Blender rendering compared to the more generic default ImageRender.  The options selected in the state will not affect to scenefile itself.
 
 ![Render_option](https://github.com/AltaArts/BlenderRender--Prism-Render-State/assets/86539171/9c4c40a2-333d-4188-bbc8-a544b8ecf452)
 
+Many options are automatically changed and filled based on the output file type selected.  For example to enable the passes options, the output type must be EXRmulti.
+
+AOV auto naming also uses the user selected options.  If EXRmulti is selected, the default name will be RGB-Data, and if an Alpha channel is used then it will changed to RGBA.  Any custom AOV names may be utilized by using the Custom checkbox.
+
 
 Note:  When submitting to a render farm, the Prism option "Submit scenefiles together with jobs" must be checked in order for the farm to use the temporary edited scenefile.
+
 ![Deadline_option](https://github.com/AltaArts/BlenderRender--Prism-Render-State/assets/86539171/5412bd9c-4943-4e2d-89ca-167c7aa5773c)
 
 
 Features:
 
 - Blender view layers supported.  An override checkbox allows for single layers to be rendered, or if unchecked all layers will be used as normal.
+- 
 ![Layers](https://github.com/AltaArts/BlenderRender--Prism-Render-State/assets/86539171/d71f6f63-cefb-4038-97de-4e2302af0608)
 
 - 
@@ -65,6 +71,7 @@ If a user wants to disable BlenderRender, goto Settings->plugins and uncheck Ble
 
 ## **Issues / Suggestions**
 
-For any bug reports or suggestions, please add to the GitHub repo.
+For any bug reports or suggestions, please add to the GitHub repo.  Known issues are listed in GitHub's project and issues tabs.
+
 
 
