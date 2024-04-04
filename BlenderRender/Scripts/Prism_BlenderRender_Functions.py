@@ -40,11 +40,19 @@
 #
 ####################################################
 
+
+#   This Prism2 plugin will add a render state named BlenderRender to the state manager.  This provides
+#   more functunality to Blender's rendering including view layers.  This plugin will patch some of
+#   Prism's original Blender functions to allow BlenderRender to function, and with the plugin enabled, the
+#   default ImageRender state will not work.  This is non-destructive.
+
+
 import os
 import sys
 import platform
 import time
 import traceback
+import logging
 
 try:
     from PySide2.QtCore import *
@@ -57,6 +65,14 @@ except:
 from PrismUtils.Decorators import err_catcher_plugin as err_catcher
 from BlenderRender import BlenderRenderClass
 
+logger = logging.getLogger(__name__)
+
+
+def renderFinished_handler(dummy):
+
+    import bpy
+    bpy.context.scene["PrismIsRendering"] = False
+
 
 
 class Prism_BlenderRender_Functions(object):
@@ -65,6 +81,10 @@ class Prism_BlenderRender_Functions(object):
         self.plugin = plugin
 
         self.core.registerCallback("onStateManagerOpen", self.onStateManagerOpen, plugin=self)
+        self.core.registerCallback("pluginLoaded", self.onPluginLoaded, plugin=self)
+
+        self.blendPlugin = self.core.getPlugin("Blender")
+        self.applyBlendPatch()
 
 
     # if returns true, the plugin will be loaded by Prism
@@ -77,21 +97,63 @@ class Prism_BlenderRender_Functions(object):
     def onPluginLoaded(self, plugin):
         # check if the loaded plugin is to be patched
         if plugin.pluginName == "Blender":
-            self.applyBlendPatch(plugin)
+            self.applyBlendPatch()
+
 
     @err_catcher(name=__name__)
-    def applyBlendPatch(self, plugin):
+    def applyBlendPatch(self):
 
-        if hasattr(plugin, 'sm_render_preSubmit'):
+        #   Ensures it is not using the Blender_unloaded plugin
+        if hasattr(self.blendPlugin, "startup"):
             # try:
+
+            logger.debug("*** Patching Blender Plugin ***")
             
-            self.core.plugins.monkeyPatch(plugin.sm_render_preSubmit, self.sm_render_preSubmit, self, force=True)
-            self.core.plugins.monkeyPatch(plugin.sm_render_startLocalRender, self.sm_render_startLocalRender, self, force=True)
+            #   Functions in Prism_Blender_Functions.py to be patched
+            patchList = ["setFPS",
+                         "sm_render_refreshPasses", 
+                         "getViewLayerAOVs",
+                         "getAvailableAOVs",
+                         "removeAOV",
+                         "enableViewLayerAOV",
+                         "sm_render_preSubmit",
+                         "sm_render_startLocalRender",
+                         "sm_render_undoRenderSettings",
+                         "sm_render_getRenderPasses",
+                         "sm_render_addRenderPass"
+                         ]
+            
+            #   Iterate through list and patches each
+            for patch in patchList:
+                try:
+                    origFunc = getattr(self.blendPlugin, patch)
+                    patchedFunc = getattr(self, patch)
+                    self.core.plugins.monkeyPatch(origFunc, patchedFunc, self, force=True)
 
-            # except Exception as e:
-            #     self.core.popup(f"Execption: {e}")                                      #    TESTING
+                    logger.debug(f"Patched:  {patch}")
+                except Exception as e:
+                    logger.warning(f"Unable to patch: {patch}\n"
+                                   f"      {e}")
 
+            addFuncList = ["getRenderSamples",
+                           "useCompositor",
+                           "getPersistantData",
+                           "getRenderLayers",
+                           "setTempScene",
+                           "nextRenderslot",
+                           "setupLayers"]
+            
+            #   Iterate through list and adds each
+            for func in addFuncList:
+                try:
+                    addedFunc = getattr(self, func)
+                    setattr(self.blendPlugin, func, addedFunc)
 
+                    logger.debug(f"Added method:  {func}")
+                except Exception as e:
+                    logger.warning(f"Unable to add method: {func}\n"
+                                   f"      {e}")
+ 
 
     @err_catcher(name=__name__)
     def onStateManagerOpen(self, origin):
@@ -100,13 +162,153 @@ class Prism_BlenderRender_Functions(object):
             origin.loadState(BlenderRenderClass)
 
 
+    @err_catcher(name=__name__)
+    def setFPS(self, origin, fps):
+
+        import bpy, math                                                        #   ADDED
+
+        if isinstance(fps, int):                                                #   EDITED to fix FPS check
+            bpy.context.scene.render.fps = fps                                  #   EDITED
+        else:
+            intFps = math.ceil(fps)
+            bpy.context.scene.render.fps = intFps
+            bpy.context.scene.render.fps_base = intFps/fps
+
+
+    @err_catcher(name=__name__)
+    def sm_render_refreshPasses(self, origin, renderLayer):                     #   EDITED
+
+        origin.lw_passes.clear()
+
+        passNames = self.blendPlugin.getNodeAOVs()                              #   EDITED
+        logger.debug("node aovs: %s" % passNames)
+        origin.b_addPasses.setVisible(not passNames)
+        self.blendPlugin.canDeleteRenderPasses = bool(not passNames)            #   EDITED
+        if not passNames:
+            passNames = self.getViewLayerAOVs(renderLayer)                      #   EDITED
+            logger.debug("viewlayer aovs: %s" % passNames)
+
+        if passNames:
+            origin.lw_passes.addItems(passNames)
+
+
+    @err_catcher(name=__name__)
+    def getViewLayerAOVs(self, renderLayer):                                    #   EDITED
+
+        import bpy, operator                                                    #   ADDED
+
+        availableAOVs = self.getAvailableAOVs(renderLayer)                      #   EDITED
+        curlayer = bpy.context.scene.view_layers[renderLayer]                   #   EDITED
+        aovNames = []
+        for aa in availableAOVs:
+            val = None
+            try:
+                val = operator.attrgetter(aa["parm"])(curlayer)
+            except AttributeError:
+                logging.debug("Couldn't access aov %s" % aa["parm"])
+                pass
+
+            if val:
+                aovNames.append(aa["name"])
+
+        return aovNames
+
+
+    @err_catcher(name=__name__)                 
+    def getAvailableAOVs(self, renderLayer):                                        #   EDITED
+
+        import bpy                                                                  #   ADDED
+
+        curlayer = bpy.context.scene.view_layers[renderLayer]                       #   EDITED
+        aovParms = [x for x in dir(curlayer) if x.startswith("use_pass_")]
+        aovParms += [
+            "cycles." + x for x in dir(curlayer.cycles) if x.startswith("use_pass_")
+        ]
+        aovs = [
+            {"name": "Denoising Data", "parm": "cycles.denoising_store_passes"},
+            {"name": "Render Time", "parm": "cycles.pass_debug_render_time"},
+        ]
+        nameOverrides = {
+            "Emit": "Emission",
+        }
+        for aov in aovParms:
+            name = aov.replace("use_pass_", "").replace("cycles.", "")
+            name = [x[0].upper() + x[1:] for x in name.split("_")]
+            name = " ".join(name)
+            name = nameOverrides[name] if name in nameOverrides else name
+            aovs.append({"name": name, "parm": aov})
+
+        aovs = sorted(aovs, key=lambda x: x["name"])
+
+        return aovs
+
+
+    @err_catcher(name=__name__)
+    def removeAOV(self, aovName, renderLayer):                                      #   EDITED
+
+        import bpy                                                                  #   ADDED
+
+        if self.blendPlugin.useNodeAOVs():                                          #   EDITED
+            rlayerNodes = [
+                x for x in bpy.context.scene.node_tree.nodes if x.type == "R_LAYERS"
+            ]
+
+            for m in rlayerNodes:
+                connections = []
+                for i in m.outputs:
+                    if len(list(i.links)) > 0:
+                        connections.append(i.links[0])
+                        break
+
+                for i in connections:
+                    if i.to_node.type == "OUTPUT_FILE":
+                        for idx, k in enumerate(i.to_node.file_slots):
+                            links = i.to_node.inputs[idx].links
+                            if len(links) > 0:
+                                if links[0].from_socket.node != m:
+                                    continue
+
+                                passName = links[0].from_socket.name
+                                layerName = links[0].from_socket.node.layer
+
+                                if passName == "Image":
+                                    passName = "beauty"
+
+                                if (
+                                    passName == aovName.split("_", 1)[1]
+                                    and layerName == aovName.split("_", 1)[0]
+                                ):
+                                    i.to_node.inputs.remove(i.to_node.inputs[idx])
+                                    return
+        else:
+            self.enableViewLayerAOV(aovName, renderLayer, enable=False)             #   EDITED
+
+
+    @err_catcher(name=__name__)
+    def enableViewLayerAOV(self, name, renderLayer, enable=True):                   #   EDITED
+
+        import bpy                                                                  #   EDITED
+
+        aa = self.getAvailableAOVs(renderLayer)                                     #   EDITED
+        curAOV = [x for x in aa if x["name"] == name]
+        if not curAOV:
+            return
+
+        curAOV = curAOV[0]
+        curlayer = bpy.context.scene.view_layers[renderLayer]                       #   EDITED
+
+        attrs = curAOV["parm"].split(".")
+        obj = curlayer
+        for a in attrs[:-1]:
+            obj = getattr(obj, a)
+
+        setattr(obj, attrs[-1], enable)
+
 
     @err_catcher(name=__name__)
     def sm_render_preSubmit(self, origin, rSettings):
 
-        self.core.popup("In sm_render_preSubmit")                                      #    TESTING
-
-        import bpy
+        import bpy                                                                      #   ADDED
 
         if origin.chb_resOverride.isChecked():
             rSettings["width"] = bpy.context.scene.render.resolution_x
@@ -114,13 +316,18 @@ class Prism_BlenderRender_Functions(object):
             bpy.context.scene.render.resolution_x = origin.sp_resWidth.value()
             bpy.context.scene.render.resolution_y = origin.sp_resHeight.value()
 
-        nodeAOVs = self.core.appPlugin.getNodeAOVs()                                    #   CHANGED SELF
+        nodeAOVs = self.blendPlugin.getNodeAOVs()                                       #   EDITED
         imgFormat = origin.cb_format.currentText()
-        if imgFormat in [".exr", ".exrMulti"]:                                          #   EDITED
-            if not nodeAOVs and self.core.appPlugin.getViewLayerAOVs():                 #   CHANGED SELF
-                fileFormat = "OPEN_EXR_MULTILAYER"
-            else:
-                fileFormat = "OPEN_EXR"
+        # if imgFormat in [".exr", ".exrMulti"]:                                        #   COMMENTED OUT
+        #     if not nodeAOVs and self.getViewLayerAOVs():
+        #         fileFormat = "OPEN_EXR_MULTILAYER"
+        #     else:
+        #         fileFormat = "OPEN_EXR"
+
+        if imgFormat == ".exr":                                                         #   EDITED
+            fileFormat = "OPEN_EXR"                                                     
+        elif imgFormat == ".exrMulti":
+            fileFormat = "OPEN_EXR_MULTILAYER"
         elif imgFormat == ".png":
             fileFormat = "PNG"
         elif imgFormat == ".jpg":
@@ -138,7 +345,6 @@ class Prism_BlenderRender_Functions(object):
 
 #################################################################################
 #    vvvvvvvvvvvvvvvvvvvvv           ADDED         vvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-        
 
         rSettings["origSamples"] = bpy.context.scene.cycles.samples
         rSettings["origImageformat"] = bpy.context.scene.render.image_settings.file_format
@@ -150,14 +356,14 @@ class Prism_BlenderRender_Functions(object):
         rSettings["origUseNode"] = bpy.context.scene.use_nodes
 
 
-        self.core.appPlugin.setTempScene(rSettings)                                 #   CHANGED SELF
+        self.blendPlugin.setTempScene(rSettings, origin)    
 
 
 
-        rSettings = self.core.appPlugin.setupLayers(rSettings, mode="Set")          #   CHANGED SELF
+        rSettings = self.blendPlugin.setupLayers(rSettings, mode="Set")
 
 
-        aovName = rSettings["aovName"]                              #   TODO - deal with * ALL LAYERS *
+        aovName = rSettings["aovName"]
 
         tempOutputName = rSettings["outputName"]
 
@@ -178,11 +384,11 @@ class Prism_BlenderRender_Functions(object):
         bpy.context.scene.render.image_settings.file_format = fileFormat
         bpy.context.scene.render.use_overwrite = True
         bpy.context.scene.render.use_file_extension = False
-        bpy.context.scene.render.resolution_percentage = 100
+        # bpy.context.scene.render.resolution_percentage = 100                      #   COMMENTED OUT FOR TEMP SCENE
         bpy.context.scene.camera = bpy.context.scene.objects[origin.curCam]
 
         usePasses = False
-        if self.core.appPlugin.useNodeAOVs():                                       #   CHANGED SELF
+        if self.blendPlugin.useNodeAOVs():                                          #   EDITED
             outNodes = [
                 x for x in bpy.context.scene.node_tree.nodes if x.type == "OUTPUT_FILE"
             ]
@@ -202,7 +408,7 @@ class Prism_BlenderRender_Functions(object):
                     passName = i.from_socket.name
 
                     if passName == "Image":
-                        passName = "beauty"                                 #   TODO
+                        passName = "beauty"
 
                     if i.from_node.type == "R_LAYERS":
                         if len(rlayerNodes) > 1:
@@ -233,7 +439,7 @@ class Prism_BlenderRender_Functions(object):
                         passName,
                         os.path.splitext(os.path.basename(rSettings["outputName"]))[
                             0
-                        ].replace("beauty", passName)                               #   TODO
+                        ].replace("beauty", passName)
                         + ext,
                     )
                     newOutputPath = os.path.abspath(
@@ -243,7 +449,7 @@ class Prism_BlenderRender_Functions(object):
                             passName,
                             os.path.splitext(os.path.basename(rSettings["outputName"]))[
                                 0
-                            ].replace("beauty", passName)                           #   TODO
+                            ].replace("beauty", passName)
                             + ext,
                         )
                     )
@@ -260,16 +466,12 @@ class Prism_BlenderRender_Functions(object):
                     os.makedirs(os.path.dirname(tmpOutput))
 
 
-
     @err_catcher(name=__name__)
     def sm_render_startLocalRender(self, origin, outputName, rSettings):
-        # renderAnim = bpy.context.scene.frame_start != bpy.context.scene.frame_end
 
-        self.core.popup("In sm_render_preSubmit")                                      #    TESTING
+        import bpy                                                                          #   ADDED
 
-        import bpy
-
-
+        # renderAnim = bpy.context.scene.frame_start != bpy.context.scene.frame_end         #   COMMENTED FROM PRISM
         try:
             if not origin.renderingStarted:
                 origin.waitmsg = QMessageBox(
@@ -278,17 +480,18 @@ class Prism_BlenderRender_Functions(object):
                     "Local rendering - %s - please wait.." % origin.state.text(0),
                     QMessageBox.Cancel,
                 )
-                #    self.core.parentWindow(origin.waitmsg)
+                #    self.core.parentWindow(origin.waitmsg)                                 #   COMMENTED FROM PRISM
                 #    origin.waitmsg.buttons()[0].setHidden(True)
                 #    origin.waitmsg.show()
                 #    QCoreApplication.processEvents()
+
 
                 bpy.app.handlers.render_complete.append(renderFinished_handler)
                 bpy.app.handlers.render_cancel.append(renderFinished_handler)
 
                 self.renderedChunks = []
 
-            ctx = self.core.appPlugin.getOverrideContext(origin)
+            ctx = self.blendPlugin.getOverrideContext(origin)                               #   EDITED
             if bpy.app.version >= (2, 80, 0):
                 if "screen" in ctx:
                     ctx.pop("screen")
@@ -297,12 +500,13 @@ class Prism_BlenderRender_Functions(object):
                     ctx.pop("area")
 
 
-
-
 #################################################################################
-#    vvvvvvvvvvvvvvvvvvvvv           ADDED         vvvvvvvvvvvvvvvvvvvvvvvvvvvvvv           #   NEEDED???
+#    vvvvvvvvvvvvvvvvvvvvv           ADDED         vvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
             #   Adds modified scene options to ctx context for local render.
+
+            if not origin.chb_resOverride.isChecked():
+                ctx['scene'].render.resolution_percentage = int(origin.cb_scaling.currentText())
 
             ctx['scene'].cycles.samples = int(rSettings["renderSamples"])
             ctx['scene'].render.use_persistent_data = (rSettings["persData"])
@@ -340,18 +544,10 @@ class Prism_BlenderRender_Functions(object):
 
             else:
                 ctx['scene'].render.image_settings.color_mode = "RGB"
-
-
                 
 #    ^^^^^^^^^^^^^^^^^^^^^          ADDED       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #####################################################################################
                 
-
-
-
-
-
-
             if rSettings["startFrame"] is None:
                 frameChunks = [[x, x] for x in rSettings["frames"]]
             else:
@@ -366,8 +562,7 @@ class Prism_BlenderRender_Functions(object):
                 singleFrame = rSettings["rangeType"] == "Single Frame"
                 if bpy.app.version < (4, 0, 0):
 
-                    self.core.appPlugin.nextRenderslot()                           #   ADDED
-
+                    self.blendPlugin.nextRenderslot()                               #   ADDED
 
                     bpy.ops.render.render(
                         ctx,
@@ -378,8 +573,7 @@ class Prism_BlenderRender_Functions(object):
                 else:
                     with bpy.context.temp_override(**ctx):
 
-                        self.core.appPlugin.nextRenderslot()                           #   ADDED
-
+                        self.blendPlugin.nextRenderslot()                           #   ADDED
 
                         bpy.ops.render.render(
                             "INVOKE_DEFAULT",
@@ -387,13 +581,10 @@ class Prism_BlenderRender_Functions(object):
                             write_still=singleFrame,
                         )
                 
-                    #   I WANT TO WAIT FOR THE SAVE TO FINISH HERE BEFORE GOING TO NEXT FRAME CHUNK
-
-
                 origin.renderingStarted = True
                 origin.LastRSettings = rSettings
 
-                self.core.appPlugin.startRenderThread(origin)
+                self.blendPlugin.startRenderThread(origin)                          #   EDITED
                 self.renderedChunks.append(frameChunk)
 
                 return "publish paused"
@@ -418,5 +609,282 @@ class Prism_BlenderRender_Functions(object):
                 origin.core.version,
                 traceback.format_exc(),
             )
-            self.core.writeErrorLog(erStr)
+            self.core.writeErrorLog(erStr)                                              #   TODO
             return "Execute Canceled: unknown error (view console for more information)"
+        
+
+
+    @err_catcher(name=__name__)
+    def sm_render_undoRenderSettings(self, origin, rSettings):
+
+        import bpy, shutil                                                              #   ADDED
+
+        if "width" in rSettings:
+            bpy.context.scene.render.resolution_x = rSettings["width"]
+        if "height" in rSettings:
+            bpy.context.scene.render.resolution_y = rSettings["height"]
+        if "prev_start" in rSettings:
+            bpy.context.scene.frame_start = rSettings["prev_start"]
+        if "prev_end" in rSettings:
+            bpy.context.scene.frame_end = rSettings["prev_end"]
+        if "fileformat" in rSettings:
+            bpy.context.scene.render.image_settings.file_format = rSettings[
+                "fileformat"
+            ]
+        if "overwrite" in rSettings:
+            bpy.context.scene.render.use_overwrite = rSettings["overwrite"]
+        if "fileextension" in rSettings:
+            bpy.context.scene.render.use_file_extension = rSettings["fileextension"]
+        if "resolutionpercent" in rSettings:
+            bpy.context.scene.render.resolution_percentage = rSettings[
+                "resolutionpercent"
+            ]
+
+#################################################################################
+#    vvvvvvvvvvvvvvvvvvvvv           ADDED         vvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+
+        if "origSamples" in rSettings:
+            bpy.context.scene.cycles.samples = rSettings["origSamples"]
+
+        if "origPersData" in rSettings:
+            bpy.context.scene.render.use_persistent_data = rSettings["origPersData"]
+
+        if "origUseComp" in rSettings:
+            bpy.context.scene.render.use_compositing = rSettings["origUseComp"]
+
+        if "origUseNode" in rSettings:
+            bpy.context.scene.use_nodes = rSettings["origUseNode"]
+
+        if "origImageformat" in rSettings:
+            bpy.context.scene.render.image_settings.file_format = rSettings["origImageformat"]
+
+        if "origExrCodec" in rSettings:
+            bpy.context.scene.render.image_settings.exr_codec = rSettings["origExrCodec"]
+
+        if "origBitDepth" in rSettings:
+            bpy.context.scene.render.image_settings.color_depth = rSettings["origBitDepth"]
+
+        if "origAlpha" in rSettings:
+            bpy.context.scene.render.image_settings.color_mode = rSettings["origAlpha"]
+
+        if rSettings["overrideLayers"]:
+            if "origLayers" in rSettings:
+
+                self.setupLayers(rSettings, mode="Restore")
+
+#    ^^^^^^^^^^^^^^^^^^^^^          ADDED       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#####################################################################################
+
+        if platform.system() == "Windows":
+            tmpOutput = os.path.join(os.environ["temp"], "PrismRender")
+            if os.path.exists(tmpOutput):
+                try:
+                    shutil.rmtree(tmpOutput)
+                except:
+                    pass
+
+        bDir = os.path.dirname(rSettings["origOutputName"])
+        if os.path.exists(bDir) and len(os.listdir(bDir)) == 0:
+            try:
+                shutil.rmtree(bDir)
+            except:
+                pass
+
+            origin.l_pathLast.setText(rSettings["outputName"])
+            origin.l_pathLast.setToolTip(rSettings["outputName"])
+            origin.stateManager.saveStatesToScene()
+
+
+    @err_catcher(name=__name__)
+    def sm_render_getRenderPasses(self, origin, renderLayer):                           #   EDITED
+        aovNames = [
+            x["name"]
+            for x in self.getAvailableAOVs(renderLayer)                                 #   EDITED
+            if x["name"] not in self.getViewLayerAOVs(renderLayer)                      #   EDITED
+        ]
+        return aovNames
+
+    @err_catcher(name=__name__)
+    def sm_render_addRenderPass(self, origin, passName, steps, renderLayer):            #   EDITED
+        self.enableViewLayerAOV(passName, renderLayer)                                  #   EDITED
+
+
+
+
+
+
+#################################################################################
+#    vvvvvvvvvvvvvvvvvvvvv        ADDED METHODS       vvvvvvvvvvvvvvvvvvvvvvvvvvv
+
+
+    @err_catcher(name=__name__)                                 #   ADDED
+    def getRenderSamples(self, command, samples=None):
+
+        import bpy
+
+        if command == "Status":
+            samples = bpy.context.scene.cycles.samples
+
+            return samples
+    
+        elif command == "Set":
+            bpy.context.scene.cycles.samples = samples
+
+
+    @err_catcher(name=__name__)                                 #   ADDED
+    def useCompositor(self, command, useComp=False):
+
+        import bpy
+
+        if command == "Status":
+            isChecked = bpy.context.scene.use_nodes
+
+            return isChecked
+    
+        elif command == "Set":
+            bpy.context.scene.render.use_compositing = useComp
+            bpy.context.scene.use_nodes = useComp
+    
+
+    @err_catcher(name=__name__)                                 #   ADDED
+    def getPersistantData(self, command, usePD=False):
+
+        import bpy
+
+        if command == "Status":
+            isChecked = bpy.context.scene.render.use_persistent_data
+
+            return isChecked
+        
+        elif command == "Set":
+            bpy.context.scene.render.use_persistent_data = usePD
+
+
+    @err_catcher(name=__name__)                                 #   ADDED
+    def getRenderLayers(self):
+
+        import bpy
+
+        renderLayers = []
+
+        for viewLayer in bpy.context.scene.view_layers:
+            layerName = viewLayer.name
+            renderLayers.append(layerName)
+
+        currentLayer = bpy.context.view_layer.name
+
+        return  renderLayers, currentLayer
+    
+
+    @err_catcher(name=__name__)                                 #   ADDED
+    def setTempScene(self, rSettings, origin):    
+
+        import bpy
+
+        bpy.context.scene.render.resolution_percentage = int(origin.cb_scaling.currentText())
+
+        compEnabled = rSettings["useComp"]
+        self.useCompositor(command="Set", useComp=compEnabled)
+
+        persData = rSettings["persData"]
+        self.getPersistantData(command="Set", usePD=persData)
+
+        samples = int(rSettings["renderSamples"])
+        self.getRenderSamples(command="Set", samples=samples)
+
+        imageFormat = rSettings["imageFormat"]
+        if rSettings["useAlpha"] == False:
+            alpha = "RGB"
+        else:
+            alpha = "RGBA"
+
+        if imageFormat == ".exr":
+            imageFormat = "OPEN_EXR"
+            bpy.context.scene.render.image_settings.file_format = imageFormat
+            bpy.context.scene.render.image_settings.exr_codec = rSettings["exrCodec"]
+            bpy.context.scene.render.image_settings.color_depth = rSettings["exrBitDepth"]
+            bpy.context.scene.render.image_settings.color_mode = alpha
+
+        elif imageFormat == ".exrMulti":
+            imageFormat = "OPEN_EXR_MULTILAYER"
+            bpy.context.scene.render.image_settings.file_format = imageFormat
+            bpy.context.scene.render.image_settings.exr_codec = rSettings["exrCodec"]
+            bpy.context.scene.render.image_settings.color_depth = rSettings["exrBitDepth"]
+            bpy.context.scene.render.image_settings.color_mode = alpha
+
+        elif imageFormat == ".png":
+            imageFormat = "PNG"
+            bpy.context.scene.render.image_settings.file_format = imageFormat
+            bpy.context.scene.render.image_settings.color_depth = rSettings["pngBitDepth"]
+            bpy.context.scene.render.image_settings.compression = rSettings["pngCompress"]
+            bpy.context.scene.render.image_settings.color_mode = alpha
+
+        elif imageFormat == ".jpg":
+            imageFormat = "JPEG"
+            bpy.context.scene.render.image_settings.file_format = imageFormat
+            bpy.context.scene.render.image_settings.quality = rSettings["jpegQual"]
+
+
+    @err_catcher(name=__name__)
+    def nextRenderslot(self):
+
+        import bpy
+
+        try:
+            bpy.data.images['Render Result'].render_slots.active_index += 1
+            bpy.data.images['Render Result'].render_slots.active_index %= 7
+        except:
+            pass
+
+
+    @err_catcher(name=__name__)
+    def setupLayers(self, rSettings, mode):
+
+        import bpy
+        
+        overrideLayers = rSettings["overrideLayers"]
+        renderLayer = rSettings["renderLayer"]
+
+        if mode == "Set":
+            origLayers = {}
+
+            #   Iterates through all layers Render and saves the orig state.
+            for vl in bpy.context.scene.view_layers:
+                origLayers[vl.name] = vl.use
+
+            #   Saves the dict to rSettings
+            rSettings["origLayers"] = origLayers
+
+            #   If overrideLayers is checked, will set the layers
+            if overrideLayers:
+                singleLayer = rSettings["renderLayer"] 
+                disabledLayers = set()
+                tempLayers = {}
+
+                #   Will disable all layers execpt the selected single layer
+                for vl in bpy.context.scene.view_layers:
+                    if vl.name != singleLayer:
+                        disabledLayers.add(vl.name)
+                        vl.use = False
+                        
+                    else:
+                        vl.use = True         
+
+                    tempLayers[vl.name] = vl.use            
+
+                rSettings["tempLayers"] = tempLayers
+
+        if mode == "Restore":
+            # Get orig layer config
+            origLayers = rSettings.get("origLayers", {})
+
+            #   Set the layer to the original state
+            for vl in bpy.context.scene.view_layers:
+                vl_name = vl.name
+                origUse = origLayers.get(vl_name, False)
+                vl.use = origUse
+        
+        return rSettings
+
+#    ^^^^^^^^^^^^^^^^^^^^^          ADDED       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#####################################################################################
