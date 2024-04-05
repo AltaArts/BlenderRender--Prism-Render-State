@@ -241,7 +241,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         self.b_resPresets.clicked.connect(self.showResPresets)
         self.cb_master.activated.connect(self.stateManager.saveStatesToScene)
         self.e_samples.textChanged.connect(self.stateManager.saveStatesToScene)
-        self.cb_outPath.activated[str].connect(self.stateManager.saveStatesToScene)
+        self.cb_outPath.activated[int].connect(self.stateManager.saveStatesToScene)
         self.chb_overrideLayers.toggled.connect(self.updateUi)
         self.cb_renderLayer.currentIndexChanged.connect(self.updateUi)
         self.chb_compositor.toggled.connect(self.stateManager.saveStatesToScene)            
@@ -541,13 +541,9 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
             self.l_pathLast.setText(lePath)
             self.l_pathLast.setToolTip(lePath)
         if "stateenabled" in data:
-            self.state.setCheckState(
-                0,
-                eval(
-                    data["stateenabled"]
-                    .replace("PySide.QtCore.", "")
-                    .replace("PySide2.QtCore.", "")
-                    ),
+            if type(data["stateenabled"]) == int:
+                self.state.setCheckState(
+                    0, Qt.CheckState(data["stateenabled"]),
                 )
 
         self.updateUi()
