@@ -8,10 +8,9 @@
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide2.QtCore import *
-from PySide2.QtGui import *
-from PySide2.QtWidgets import *
-
+from qtpy.QtCore import *
+from qtpy.QtGui import *
+from qtpy.QtWidgets import *
 
 class Ui_wg_BlenderRender(object):
     def setupUi(self, wg_BlenderRender):
@@ -40,7 +39,6 @@ class Ui_wg_BlenderRender(object):
         self.l_class.setObjectName(u"l_class")
         font = QFont()
         font.setBold(True)
-        font.setWeight(75)
         self.l_class.setFont(font)
 
         self.horizontalLayout_4.addWidget(self.l_class)
