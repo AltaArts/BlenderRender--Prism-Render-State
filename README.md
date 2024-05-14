@@ -84,9 +84,9 @@ Expanded options for output file types and codecs.
 
 This plugin is for Windows only, as Prism2 only supports Windows at this time.
 
-You can either download the latest stable release version from: [Latest Release](https://github.com/AltaArts/DeleteFunctions--Prism-Plugin/releases/latest)
+You can either download the latest stable release version from: [Latest Release](https://github.com/AltaArts/BlenderRender--Prism-Render-State/releases/latest)
 
-or download the current code zip file from the green "Code" button above or on [Github](https://github.com/JBreckeen/DeleteFunctions--Prism-Plugin/tree/main)
+or download the current code zip file from the green "Code" button above or on [Github](https://github.com/JBreckeen/BlenderRender--Prism-Render-State/tree/main)
 
 Copy the directory named "BlenderRender" to a directory of your choice, or a Prism2 plugin directory.
 
@@ -96,7 +96,7 @@ It is suggested to have all custom plugins in a seperate folder suchs as: *{driv
 
 You can add the additional plugin search paths in Prism2 settings.  Go to Settings->Plugins and click the gear icon.  This opens a dialogue and you may add additional search paths at the bottom.
 
-Once added, you can either restart Prism2 (prefered) or select the "Add existing plugin" (plus icon) and navigate to where you saved the DeleteFunctions folder and then click the "Reload all plugins" button.
+Once added, you can either restart Prism2 (prefered) or select the "Add existing plugin" (plus icon) and navigate to where you saved the BlenderRender folder and then click the "Reload all plugins" button.
 
 ![Settings_Plugin_Menubar](https://github.com/AltaArts/BlenderRender--Prism-Render-State/assets/86539171/252061e3-9b15-4683-9e23-80bf872d6595)
 
