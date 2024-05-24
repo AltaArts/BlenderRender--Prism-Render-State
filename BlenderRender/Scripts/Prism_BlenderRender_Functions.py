@@ -117,7 +117,8 @@ class Prism_BlenderRender_Functions(object):
                          "sm_render_startLocalRender",
                          "sm_render_undoRenderSettings",
                          "sm_render_getRenderPasses",
-                         "sm_render_addRenderPass"
+                         "sm_render_addRenderPass",
+                         "sm_render_getDeadlineParams"
                          ]
             
             #   Iterate through list and patches each
@@ -128,6 +129,7 @@ class Prism_BlenderRender_Functions(object):
                     self.core.plugins.monkeyPatch(origFunc, patchedFunc, self, force=True)
 
                     logger.debug(f"Patched:  {patch}")
+                    
                 except Exception as e:
                     logger.warning(f"Unable to patch: {patch}\n"
                                    f"      {e}")
@@ -154,9 +156,23 @@ class Prism_BlenderRender_Functions(object):
 
     @err_catcher(name=__name__)
     def onStateManagerOpen(self, origin):
-        #   Will only load BlenderRender state if in Blender
         if self.core.appPlugin.pluginName == "Blender":
-            origin.loadState(BlenderRenderClass)
+            #   Will only load BlenderRender state if in Blender
+            try:
+                origin.loadState(BlenderRenderClass)
+                logger.debug("Added BlenderRender state")
+            except Exception as e:
+                logger.warning(f"Unable to load BlenderRender state:\n{e}")
+
+            #   Removes default ImageRender state
+            try:
+                del origin.stateTypes["ImageRender"]
+                logger.debug("Removed default ImageRender state")
+            except Exception as e:
+                logger.warning(f"Unable to remove ImageRender state:\n{e}")
+
+
+
 
 
     @err_catcher(name=__name__)
@@ -706,7 +722,18 @@ class Prism_BlenderRender_Functions(object):
         self.enableViewLayerAOV(passName, renderLayer)                                  #   EDITED
 
 
+    @err_catcher(name=__name__)
+    def sm_render_getDeadlineParams(self, origin, dlParams, homeDir):
+        dlParams["jobInfoFile"] = os.path.join(
+            homeDir, "temp", "blender_submit_info.job"
+        )
+        dlParams["pluginInfoFile"] = os.path.join(
+            homeDir, "temp", "blender_plugin_info.job"
+        )
 
+        dlParams["jobInfos"]["Plugin"] = "Blender"
+        dlParams["jobInfos"]["Comment"] = "Prism-Submission-BlenderRender"              #   EDITED
+        dlParams["pluginInfos"]["OutputFile"] = dlParams["jobInfos"]["OutputFilename0"]
 
 
 
