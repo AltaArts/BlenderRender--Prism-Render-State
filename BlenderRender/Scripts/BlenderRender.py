@@ -1922,7 +1922,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
             "dlgpudevices": self.le_dlGPUdevices.text(),
             "lastexportpath": self.l_pathLast.text().replace("\\", "/"),
             "enablepasses": str(self.gb_passes.isChecked()),
-            "stateenabled": str(self.state.checkState(0)),
+            "stateenabled": self.core.getCheckStateValue(self.state.checkState(0)),
             }
         self.core.callback("onStateGetSettings", self, stateProps)
         return stateProps
