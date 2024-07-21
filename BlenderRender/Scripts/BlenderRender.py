@@ -62,7 +62,6 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
     @err_catcher(name=__name__)
     def setup(self, state, core, stateManager, node=None, stateData=None):
-
         self.state = state
         self.core = core
         self.stateManager = stateManager
@@ -134,6 +133,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
                 "compressWidget": self.cb_exrCodec,
                 "compressLabel": "Codec: ",
                 "alpha": True,
+                "colorSpace": True
                 },
             ".exrMulti": {
                 "bitDepths": ["16", "32"],
@@ -141,17 +141,20 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
                 "compressWidget": self.cb_exrCodec,
                 "compressLabel": "Codec: ",
                 "alpha": True,
+                "colorSpace": True
                 },
             ".png": {
                 "bitDepths": ["8", "16"],
                 "compressWidget": self.sp_pngCompress,
                 "compressLabel": "Compression %: ",
                 "alpha": True,
+                "colorSpace": False
                 },
             ".jpg": {
                 "compressWidget": self.sp_jpegQual,
                 "compressLabel": "Quality %: ",
                 "alpha": False,
+                "colorSpace": False
                 },
             }
 
@@ -166,6 +169,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
             "150",
             "200"
             ]
+        
         self.cb_scaling.addItems(self.scalings)
         tempIdx = self.cb_scaling.findText("100")
         self.cb_scaling.setCurrentIndex(tempIdx)
@@ -191,7 +195,9 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         if self.cb_manager.count() == 0:
             self.gb_submit.setVisible(False)
 
-        self.getRenderLayers("load")               
+        self.getRenderLayers("load")
+        self.getColorSpaces("load")
+
         self.managerChanged(True)
 
         self.e_fml.setStyleSheet("border: none;")
@@ -253,7 +259,9 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         self.cb_pngBitDepth.activated.connect(self.stateManager.saveStatesToScene)          
         self.sp_pngCompress.editingFinished.connect(self.stateManager.saveStatesToScene)    
         self.sp_jpegQual.editingFinished.connect(self.stateManager.saveStatesToScene)       
-        self.chb_alpha.toggled.connect(self.updateUi)                 
+        self.chb_alpha.toggled.connect(self.updateUi)
+        self.chb_colorSpace.toggled.connect(self.updateUi)
+        self.cb_colorSpace.activated.connect(self.stateManager.saveStatesToScene)
         self.gb_submit.toggled.connect(self.rjToggled)
         self.cb_manager.activated.connect(self.managerChanged)
         self.sp_rjPrio.editingFinished.connect(self.stateManager.saveStatesToScene)
@@ -279,7 +287,6 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
     @err_catcher(name=__name__)
     def setToolTips(self):
-
         tip = "Media Identifier.  Taskname is default."
         self.l_taskName.setToolTip(tip)
 
@@ -359,6 +366,11 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
         tip = "Toggle to use an Alpha channel."
         self.chb_alpha.setToolTip(tip)
+
+        tip = "Color space for rendered images."
+        self.l_colorSpace.setToolTip(tip)
+        self.chb_colorSpace.setToolTip(tip)
+        self.cb_colorSpace.setToolTip(tip)
 
         tip = ("Selected AOV passes.  Right-click to delete.\n\n"
                "If using Render Layer override, passes will be per layer."
@@ -494,11 +506,19 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         if "useAlpha" in data:                                              
             self.chb_alpha.setChecked(data["useAlpha"])
 
-        if "useComp" in data:                                               
+        if "useComp" in data:
             self.chb_compositor.setChecked(data["useComp"])
 
-        if "persData" in data:                                              
-            self.chb_persData.setChecked(data["persData"])     
+        if "persData" in data:
+            self.chb_persData.setChecked(data["persData"])
+
+        if "ovrColorSpace" in data:
+            self.chb_colorSpace.setChecked(data["ovrColorSpace"])
+
+        if "currColorSpace" in data:
+            idx = self.cb_colorSpace.findText(data["currColorSpace"])
+            if idx != -1:
+                self.cb_colorSpace.setCurrentIndex(idx)
 
         if "submitrender" in data:
             self.gb_submit.setChecked(eval(data["submitrender"]))
@@ -553,7 +573,6 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
     @err_catcher(name=__name__)
     def createNewStateData(self):
-        
         self.e_aovNameCustom.hide()
         self.e_aovNameCustom.setText("beauty")
 
@@ -594,7 +613,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
             "codec": "DWAA",
             "bitDepth": "16",
             "useAlpha": True
-        }
+            }
         self.setupFormatOptions(mode="New", loadOptions=newOptions)       
 
         samples = self.getRenderSamples(command="Status")
@@ -605,6 +624,14 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
         usePD = self.getPersistantData(command="Status")                  
         self.chb_persData.setChecked(usePD)
+
+        ovrColorSpace = self.getColorSpaces(command="isOverride")
+        self.chb_colorSpace.setChecked(ovrColorSpace)
+
+        curColorSpace = self.getColorSpaces(command="current")
+        curIdx = self.cb_colorSpace.findText(curColorSpace)
+        if curIdx != -1:
+            self.cb_colorSpace.setCurrentIndex(curIdx)
 
         self.updateUi()
 
@@ -644,6 +671,14 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         self.refreshSubmitUi()
         self.refreshPasses()
 
+        ovrColorspace = self.chb_colorSpace.isChecked()
+        self.cb_colorSpace.setEnabled(ovrColorspace)
+        if not ovrColorspace:
+            sceneColorspace = self.getColorSpaces(command="current")
+            curIdx = self.cb_colorSpace.findText(sceneColorspace)
+            if curIdx != -1:
+                self.cb_colorSpace.setCurrentIndex(curIdx)
+
         if self.chb_resOverride.isChecked():
             tip1 = tip2 = "Disabled"
             tip3 = "Final render resolution."
@@ -665,6 +700,12 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
             tip = "Disabled"
         self.cb_renderLayer.setToolTip(tip)
 
+        if self.chb_colorSpace.isChecked():
+            tip = "Override Colorspace from scenefile."
+        else:
+            tip = "Use scenefile Colorspace."
+        self.cb_colorSpace.setToolTip(tip)
+
         if self.cb_format.currentText() == ".exrMulti":
             tip = "Opens dialog to select AOV passes"
         else:
@@ -680,10 +721,10 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
     @err_catcher(name=__name__)
     def setupFormatOptions(self, index=None, mode=None, loadOptions=None):
-
         for widget in [
             self.l_bitDepth, self.cb_exrBitDepth, self.cb_pngBitDepth,
-            self.cb_exrCodec, self.sp_pngCompress, self.sp_jpegQual, self.chb_alpha
+            self.cb_exrCodec, self.sp_pngCompress, self.sp_jpegQual, self.chb_alpha,
+            self.l_colorSpace, self.chb_colorSpace, self.cb_colorSpace
             ]:
             widget.hide()
 
@@ -730,15 +771,17 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
         if "alpha" in options and options["alpha"]:
             self.chb_alpha.show()
+        if "colorSpace" in options and options["colorSpace"]:
+            self.l_colorSpace.show()
+            self.chb_colorSpace.show()
+            self.cb_colorSpace.show()
 
         self.updateUi()
-
         self.stateManager.saveStatesToScene()
 
 
     @err_catcher(name=__name__)                                     
     def aovNameSetup(self, checked=False):
-
         autoName = not self.chb_customAOV.isChecked()
         fileType = self.cb_format.currentText()
         useAlpha = self.chb_alpha.isChecked()
@@ -1123,7 +1166,6 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
     @err_catcher(name=__name__)                                 
     def rezScaleCalc(self, index):
-
         if hasattr(self.core.appPlugin, "getResolution"):
             rez = self.core.appPlugin.getResolution()
 
@@ -1187,6 +1229,20 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
             self.core.appPlugin.getPersistantData(command="Set", usePD=usePD)
 
 
+    @err_catcher(name=__name__)                             
+    def getColorSpaces(self, command):
+        colorOverride, currSpace, spaceList = self.core.appPlugin.getColorSpaces()
+
+        if command == "isOverride":
+            return colorOverride
+        
+        if command == "current":
+            return currSpace
+        
+        if command == "load":
+            self.cb_colorSpace.addItems(spaceList)
+
+
     @err_catcher(name=__name__)
     def getLocation(self):
         return self.cb_outPath.currentText()
@@ -1213,6 +1269,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
             return renderLayers
         elif command == "load":
             self.cb_renderLayer.addItems(renderLayers)
+
 
     @err_catcher(name=__name__)
     def refreshContext(self):
@@ -1262,7 +1319,6 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         isCustom = rangeType == "Custom"
         isExp = rangeType == "Expression"
         isFML = rangeType in ["FML", "FMMML"]
-                                          
 
         self.l_rangeStart.setVisible(not isCustom and not isExp and not isFML)
         self.l_rangeEnd.setVisible(not isCustom and not isExp and not isFML)
@@ -1287,14 +1343,12 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
     @err_catcher(name=__name__)
     def fmlRange(self, rangeType):
-
         startFrame, endFrame = self.getFrameRange(rangeType="Shot")
         middleFrame = round((startFrame + endFrame) / 2)
 
         if rangeType == "FML":
             middleFrame = round((startFrame + endFrame) / 2)
             fmlString = f"{startFrame}, {middleFrame}, {endFrame}"
-
         else:
             step = (endFrame - startFrame) / 4
             mdlFirst, mdlSecond, mdlThrird = round(startFrame + step), round(startFrame + 2 * step), round(startFrame + 3 * step)
@@ -1410,7 +1464,6 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
     @err_catcher(name=__name__)
     def refreshPasses(self, index=None):
-
         renderlayer = self.curOverrideLayer()
 
         self.core.appPlugin.sm_render_refreshPasses(self, renderlayer)
@@ -1418,7 +1471,6 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
     @err_catcher(name=__name__)
     def showPasses(self):
-
         curRenderLayer = self.curOverrideLayer()
         renderLayers =  self.getRenderLayers("all")
 
@@ -1496,7 +1548,6 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
     @err_catcher(name=__name__)
     def deleteAOVs(self):
-
         renderLayer = self.curOverrideLayer()
         renderLayers = self.getRenderLayers("all")
 
@@ -1720,6 +1771,8 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
                 "useAlpha": self.chb_alpha.isChecked(),                     
                 "useComp": self.chb_compositor.isChecked(),                 
                 "persData": self.chb_persData.isChecked(),
+                "ovrColorspace": self.chb_colorSpace.isChecked(),
+                "colorSpace": self.cb_colorSpace.currentText(),
                 "aovPasses": passList                   
                 }
 
@@ -1907,6 +1960,8 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
             "pngComp": self.sp_pngCompress.value(),                             
             "jpegQual": self.sp_jpegQual.value(),                               
             "useAlpha": self.chb_alpha.isChecked(),
+            "ovrColorSpace": self.chb_colorSpace.isChecked(),
+            "currColorSpace": self.cb_colorSpace.currentText(),
             "submitrender": str(self.gb_submit.isChecked()),
             "rjmanager": str(self.cb_manager.currentText()),
             "rjprio": self.sp_rjPrio.value(),

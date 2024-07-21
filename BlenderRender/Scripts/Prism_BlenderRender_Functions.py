@@ -66,7 +66,6 @@ logger = logging.getLogger(__name__)
 
 
 def renderFinished_handler(dummy):
-
     import bpy
     bpy.context.scene["PrismIsRendering"] = False
 
@@ -99,7 +98,6 @@ class Prism_BlenderRender_Functions(object):
 
     @err_catcher(name=__name__)
     def applyBlendPatch(self):
-
         #   Ensures it is not using the Blender_unloaded plugin
         if hasattr(self.blendPlugin, "startup"):
             # try:
@@ -138,6 +136,7 @@ class Prism_BlenderRender_Functions(object):
                            "useCompositor",
                            "getPersistantData",
                            "getRenderLayers",
+                           "getColorSpaces",
                            "setTempScene",
                            "nextRenderslot",
                            "setupLayers"]
@@ -172,12 +171,8 @@ class Prism_BlenderRender_Functions(object):
                 logger.warning(f"Unable to remove ImageRender state:\n{e}")
 
 
-
-
-
     @err_catcher(name=__name__)
     def setFPS(self, origin, fps):
-
         import bpy, math                                                        #   ADDED
 
         if isinstance(fps, int):                                                #   EDITED to fix FPS check
@@ -190,16 +185,13 @@ class Prism_BlenderRender_Functions(object):
 
     @err_catcher(name=__name__)
     def sm_render_refreshPasses(self, origin, renderLayer):                     #   EDITED
-
         origin.lw_passes.clear()
 
         passNames = self.blendPlugin.getNodeAOVs()                              #   EDITED
-        logger.debug("node aovs: %s" % passNames)
         origin.b_addPasses.setVisible(not passNames)
         self.blendPlugin.canDeleteRenderPasses = bool(not passNames)            #   EDITED
         if not passNames:
             passNames = self.getViewLayerAOVs(renderLayer)                      #   EDITED
-            logger.debug("viewlayer aovs: %s" % passNames)
 
         if passNames:
             origin.lw_passes.addItems(passNames)
@@ -207,7 +199,6 @@ class Prism_BlenderRender_Functions(object):
 
     @err_catcher(name=__name__)
     def getViewLayerAOVs(self, renderLayer):                                    #   EDITED
-
         import bpy, operator                                                    #   ADDED
 
         availableAOVs = self.getAvailableAOVs(renderLayer)                      #   EDITED
@@ -229,7 +220,6 @@ class Prism_BlenderRender_Functions(object):
 
     @err_catcher(name=__name__)                 
     def getAvailableAOVs(self, renderLayer):                                        #   EDITED
-
         import bpy                                                                  #   ADDED
 
         curlayer = bpy.context.scene.view_layers[renderLayer]                       #   EDITED
@@ -258,13 +248,12 @@ class Prism_BlenderRender_Functions(object):
 
     @err_catcher(name=__name__)
     def removeAOV(self, aovName, renderLayer):                                      #   EDITED
-
         import bpy                                                                  #   ADDED
 
         if self.blendPlugin.useNodeAOVs():                                          #   EDITED
             rlayerNodes = [
                 x for x in bpy.context.scene.node_tree.nodes if x.type == "R_LAYERS"
-            ]
+                ]
 
             for m in rlayerNodes:
                 connections = []
@@ -290,7 +279,7 @@ class Prism_BlenderRender_Functions(object):
                                 if (
                                     passName == aovName.split("_", 1)[1]
                                     and layerName == aovName.split("_", 1)[0]
-                                ):
+                                    ):
                                     i.to_node.inputs.remove(i.to_node.inputs[idx])
                                     return
         else:
@@ -299,7 +288,6 @@ class Prism_BlenderRender_Functions(object):
 
     @err_catcher(name=__name__)
     def enableViewLayerAOV(self, name, renderLayer, enable=True):                   #   EDITED
-
         import bpy                                                                  #   EDITED
 
         aa = self.getAvailableAOVs(renderLayer)                                     #   EDITED
@@ -320,7 +308,6 @@ class Prism_BlenderRender_Functions(object):
 
     @err_catcher(name=__name__)
     def sm_render_preSubmit(self, origin, rSettings):
-
         import bpy                                                                      #   ADDED
 
         if origin.chb_resOverride.isChecked():
@@ -354,8 +341,6 @@ class Prism_BlenderRender_Functions(object):
         rSettings["resolutionpercent"] = bpy.context.scene.render.resolution_percentage
 
 
-
-
 #################################################################################
 #    vvvvvvvvvvvvvvvvvvvvv           ADDED         vvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
@@ -367,28 +352,23 @@ class Prism_BlenderRender_Functions(object):
         rSettings["origPersData"] = bpy.context.scene.render.use_persistent_data
         rSettings["origUseComp"] = bpy.context.scene.render.use_compositing
         rSettings["origUseNode"] = bpy.context.scene.use_nodes
-
+        if fileFormat in ["OPEN_EXR", "OPEN_EXR_MULTILAYER"]:
+            rSettings["origOvrColorspace"] = bpy.context.scene.render.image_settings.color_management
+            rSettings["origColorspace"] = bpy.context.scene.render.image_settings.linear_colorspace_settings.name
 
         self.blendPlugin.setTempScene(rSettings, origin)    
 
-
-
         rSettings = self.blendPlugin.setupLayers(rSettings, mode="Set")
-
-
         aovName = rSettings["aovName"]
-
         tempOutputName = rSettings["outputName"]
-
         tempOutputName = tempOutputName.replace("beauty", aovName)
         tempOutputName = tempOutputName.replace("exrMulti", "exr")
         
         rSettings["outputName"] = tempOutputName
 
+
 #    ^^^^^^^^^^^^^^^^^^^^^          ADDED       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #####################################################################################
-
-
 
 
         rSettings["origOutputName"] = rSettings["outputName"]
@@ -404,10 +384,10 @@ class Prism_BlenderRender_Functions(object):
         if self.blendPlugin.useNodeAOVs():                                          #   EDITED
             outNodes = [
                 x for x in bpy.context.scene.node_tree.nodes if x.type == "OUTPUT_FILE"
-            ]
+                ]
             rlayerNodes = [
                 x for x in bpy.context.scene.node_tree.nodes if x.type == "R_LAYERS"
-            ]
+                ]
 
             for m in outNodes:
                 connections = []
@@ -440,7 +420,7 @@ class Prism_BlenderRender_Functions(object):
                         "OPEN_EXR_MULTILAYER": ".exr",
                         "OPEN_EXR": ".exr",
                         "TIFF": ".tif",
-                    }
+                        }
                     nodeExt = extensions[m.format.file_format]
                     curSlot = m.file_slots[idx]
                     if curSlot.use_node_format:
@@ -454,7 +434,7 @@ class Prism_BlenderRender_Functions(object):
                             0
                         ].replace("beauty", passName)
                         + ext,
-                    )
+                        )
                     newOutputPath = os.path.abspath(
                         os.path.join(
                             rSettings["outputName"],
@@ -464,8 +444,8 @@ class Prism_BlenderRender_Functions(object):
                                 0
                             ].replace("beauty", passName)
                             + ext,
+                            )
                         )
-                    )
                     usePasses = True
 
         if usePasses:
@@ -473,7 +453,7 @@ class Prism_BlenderRender_Functions(object):
             if platform.system() == "Windows":
                 tmpOutput = os.path.join(
                     os.environ["temp"], "PrismRender", "tmp.####" + imgFormat
-                )
+                    )
                 bpy.context.scene.render.filepath = tmpOutput
                 if not os.path.exists(os.path.dirname(tmpOutput)):
                     os.makedirs(os.path.dirname(tmpOutput))
@@ -481,7 +461,6 @@ class Prism_BlenderRender_Functions(object):
 
     @err_catcher(name=__name__)
     def sm_render_startLocalRender(self, origin, outputName, rSettings):
-
         import bpy                                                                          #   ADDED
 
         # renderAnim = bpy.context.scene.frame_start != bpy.context.scene.frame_end         #   COMMENTED FROM PRISM
@@ -492,7 +471,7 @@ class Prism_BlenderRender_Functions(object):
                     "ImageRender",
                     "Local rendering - %s - please wait.." % origin.state.text(0),
                     QMessageBox.Cancel,
-                )
+                    )
                 #    self.core.parentWindow(origin.waitmsg)                                 #   COMMENTED FROM PRISM
                 #    origin.waitmsg.buttons()[0].setHidden(True)
                 #    origin.waitmsg.show()
@@ -540,7 +519,6 @@ class Prism_BlenderRender_Functions(object):
             ctx['scene'].render.image_settings.file_format =  selFileExt
 
             if selFileExt in ["OPEN_EXR", "OPEN_EXR_MULTILAYER", "PNG"]:
-
                 if rSettings["useAlpha"]:
                     ctx['scene'].render.image_settings.color_mode = "RGBA"
                 else:
@@ -557,6 +535,14 @@ class Prism_BlenderRender_Functions(object):
 
             else:
                 ctx['scene'].render.image_settings.color_mode = "RGB"
+
+            if selFileExt in ["OPEN_EXR", "OPEN_EXR_MULTILAYER"]:
+                if rSettings["ovrColorspace"] is True:
+                    ctx['scene'].render.image_settings.color_management = "OVERRIDE"
+                    ctx['scene'].render.image_settings.linear_colorspace_settings.name = rSettings["colorSpace"]
+                else:
+                    ctx['scene'].render.image_settings.color_management = "FOLLOW_SCENE"
+
                 
 #    ^^^^^^^^^^^^^^^^^^^^^          ADDED       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #####################################################################################
@@ -582,7 +568,7 @@ class Prism_BlenderRender_Functions(object):
                         "INVOKE_DEFAULT",
                         animation=not singleFrame,
                         write_still=singleFrame,
-                    )
+                        )
                 else:
                     with bpy.context.temp_override(**ctx):
 
@@ -592,7 +578,7 @@ class Prism_BlenderRender_Functions(object):
                             "INVOKE_DEFAULT",
                             animation=not singleFrame,
                             write_still=singleFrame,
-                        )
+                            )
                 
                 origin.renderingStarted = True
                 origin.LastRSettings = rSettings
@@ -621,15 +607,13 @@ class Prism_BlenderRender_Functions(object):
                 time.strftime("%d/%m/%y %X"),
                 origin.core.version,
                 traceback.format_exc(),
-            )
-            self.core.writeErrorLog(erStr)                                              #   TODO
+                )
+            self.core.writeErrorLog(erStr) 
             return "Execute Canceled: unknown error (view console for more information)"
-        
 
 
     @err_catcher(name=__name__)
     def sm_render_undoRenderSettings(self, origin, rSettings):
-
         import bpy, shutil                                                              #   ADDED
 
         if "width" in rSettings:
@@ -641,17 +625,14 @@ class Prism_BlenderRender_Functions(object):
         if "prev_end" in rSettings:
             bpy.context.scene.frame_end = rSettings["prev_end"]
         if "fileformat" in rSettings:
-            bpy.context.scene.render.image_settings.file_format = rSettings[
-                "fileformat"
-            ]
+            bpy.context.scene.render.image_settings.file_format = rSettings["fileformat"]
         if "overwrite" in rSettings:
             bpy.context.scene.render.use_overwrite = rSettings["overwrite"]
         if "fileextension" in rSettings:
             bpy.context.scene.render.use_file_extension = rSettings["fileextension"]
         if "resolutionpercent" in rSettings:
-            bpy.context.scene.render.resolution_percentage = rSettings[
-                "resolutionpercent"
-            ]
+            bpy.context.scene.render.resolution_percentage = rSettings["resolutionpercent"]
+
 
 #################################################################################
 #    vvvvvvvvvvvvvvvvvvvvv           ADDED         vvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
@@ -679,6 +660,13 @@ class Prism_BlenderRender_Functions(object):
 
         if "origAlpha" in rSettings:
             bpy.context.scene.render.image_settings.color_mode = rSettings["origAlpha"]
+        
+        if rSettings["origImageformat"] in ["OPEN_EXR", "OPEN_EXR_MULTILAYER"]:
+            if "origOvrColorspace" in rSettings:
+                bpy.context.scene.render.image_settings.color_management = rSettings["origOvrColorspace"]
+
+            if "origColorspace" in rSettings:   
+                bpy.context.scene.render.image_settings.linear_colorspace_settings.name = rSettings["origColorspace"]
 
         if rSettings["overrideLayers"]:
             if "origLayers" in rSettings:
@@ -687,6 +675,7 @@ class Prism_BlenderRender_Functions(object):
 
 #    ^^^^^^^^^^^^^^^^^^^^^          ADDED       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #####################################################################################
+
 
         if platform.system() == "Windows":
             tmpOutput = os.path.join(os.environ["temp"], "PrismRender")
@@ -717,6 +706,7 @@ class Prism_BlenderRender_Functions(object):
         ]
         return aovNames
 
+
     @err_catcher(name=__name__)
     def sm_render_addRenderPass(self, origin, passName, steps, renderLayer):            #   EDITED
         self.enableViewLayerAOV(passName, renderLayer)                                  #   EDITED
@@ -726,10 +716,10 @@ class Prism_BlenderRender_Functions(object):
     def sm_render_getDeadlineParams(self, origin, dlParams, homeDir):
         dlParams["jobInfoFile"] = os.path.join(
             homeDir, "temp", "blender_submit_info.job"
-        )
+            )
         dlParams["pluginInfoFile"] = os.path.join(
             homeDir, "temp", "blender_plugin_info.job"
-        )
+            )
 
         dlParams["jobInfos"]["Plugin"] = "Blender"
         dlParams["jobInfos"]["Comment"] = "Prism-Submission-BlenderRender"              #   EDITED
@@ -743,7 +733,6 @@ class Prism_BlenderRender_Functions(object):
 
     @err_catcher(name=__name__)                                 #   ADDED
     def getRenderSamples(self, command, samples=None):
-
         import bpy
 
         if command == "Status":
@@ -757,7 +746,6 @@ class Prism_BlenderRender_Functions(object):
 
     @err_catcher(name=__name__)                                 #   ADDED
     def useCompositor(self, command, useComp=False):
-
         import bpy
 
         if command == "Status":
@@ -772,7 +760,6 @@ class Prism_BlenderRender_Functions(object):
 
     @err_catcher(name=__name__)                                 #   ADDED
     def getPersistantData(self, command, usePD=False):
-
         import bpy
 
         if command == "Status":
@@ -785,8 +772,24 @@ class Prism_BlenderRender_Functions(object):
 
 
     @err_catcher(name=__name__)                                 #   ADDED
-    def getRenderLayers(self):
+    def getColorSpaces(self):
+        import bpy
 
+        imageSettings = bpy.context.scene.render.image_settings
+
+        if imageSettings.color_management == "OVERRIDE":
+            colorOverride = True
+        else:
+            colorOverride = False
+
+        currSpace = imageSettings.linear_colorspace_settings.name
+        spaceList = imageSettings.linear_colorspace_settings.bl_rna.properties['name'].enum_items.keys()
+
+        return colorOverride, currSpace, spaceList
+    
+
+    @err_catcher(name=__name__)                                 #   ADDED
+    def getRenderLayers(self):
         import bpy
 
         renderLayers = []
@@ -802,7 +805,6 @@ class Prism_BlenderRender_Functions(object):
 
     @err_catcher(name=__name__)                                 #   ADDED
     def setTempScene(self, rSettings, origin):    
-
         import bpy
 
         bpy.context.scene.render.resolution_percentage = int(origin.cb_scaling.currentText())
@@ -822,36 +824,37 @@ class Prism_BlenderRender_Functions(object):
         else:
             alpha = "RGBA"
 
-        if imageFormat == ".exr":
-            imageFormat = "OPEN_EXR"
-            bpy.context.scene.render.image_settings.file_format = imageFormat
+        if imageFormat in [".exr", "exrMulti"]:
+            if imageFormat == ".exr":
+                blendImageFormat = "OPEN_EXR"
+
+            elif imageFormat == ".exrMulti":
+                blendImageFormat = "OPEN_EXR_MULTILAYER"
+            bpy.context.scene.render.image_settings.file_format = blendImageFormat
+
             bpy.context.scene.render.image_settings.exr_codec = rSettings["exrCodec"]
             bpy.context.scene.render.image_settings.color_depth = rSettings["exrBitDepth"]
             bpy.context.scene.render.image_settings.color_mode = alpha
 
-        elif imageFormat == ".exrMulti":
-            imageFormat = "OPEN_EXR_MULTILAYER"
-            bpy.context.scene.render.image_settings.file_format = imageFormat
-            bpy.context.scene.render.image_settings.exr_codec = rSettings["exrCodec"]
-            bpy.context.scene.render.image_settings.color_depth = rSettings["exrBitDepth"]
-            bpy.context.scene.render.image_settings.color_mode = alpha
+            if rSettings["ovrColorspace"] is True:
+                bpy.context.scene.render.image_settings.color_management = "OVERRIDE"
+                bpy.context.scene.render.image_settings.linear_colorspace_settings.name = rSettings["colorSpace"]
+            else:
+                bpy.context.scene.render.image_settings.color_management = "FOLLOW_SCENE"
 
         elif imageFormat == ".png":
-            imageFormat = "PNG"
-            bpy.context.scene.render.image_settings.file_format = imageFormat
+            bpy.context.scene.render.image_settings.file_format = "PNG"
             bpy.context.scene.render.image_settings.color_depth = rSettings["pngBitDepth"]
             bpy.context.scene.render.image_settings.compression = rSettings["pngCompress"]
             bpy.context.scene.render.image_settings.color_mode = alpha
 
         elif imageFormat == ".jpg":
-            imageFormat = "JPEG"
-            bpy.context.scene.render.image_settings.file_format = imageFormat
+            bpy.context.scene.render.image_settings.file_format = "JPEG"
             bpy.context.scene.render.image_settings.quality = rSettings["jpegQual"]
 
 
     @err_catcher(name=__name__)
     def nextRenderslot(self):
-
         import bpy
 
         try:
@@ -863,7 +866,6 @@ class Prism_BlenderRender_Functions(object):
 
     @err_catcher(name=__name__)
     def setupLayers(self, rSettings, mode):
-
         import bpy
         
         overrideLayers = rSettings["overrideLayers"]
