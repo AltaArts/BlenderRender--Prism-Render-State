@@ -7,15 +7,15 @@ You can find more information on the website:
 
 https://prism-pipeline.com/
 
-![Overview](https://github.com/AltaArts/BlenderRender--Prism-Render-State/assets/86539171/405a7826-9605-4690-9ef3-bec9be5b864f)
+![Overview](https://github.com/user-attachments/assets/86d953bf-729c-4d3e-aa44-7af7a921391c)
 
-BlenderRender adds a new state to the StateManager.  This state adds additional functionality to Prism's Blender rendering compared to the more generic default ImageRender.  BlenderRender will only be available in the StateManager of Blender and will not affect other DCC's.  The options selected in the state will not affect to scenefile itself and this plugin will not over-write any existing Prism files, but will patch Prism Blender functions at runtime.
+BlenderRender adds a new state to the StateManager.  This state adds additional functionality to Prism's Blender rendering compared to the more generic default ImageRender.  BlenderRender will only be available in the StateManager of Blender and will not affect other DCC's.  The options selected in the state will not affect the scenefile itself and this plugin will not over-write any existing Prism files, but will patch Prism Blender functions at runtime.
 
 Tooltips are included for all functions.
 
 ## **Plugin Usage**
 
-![Render_option](https://github.com/AltaArts/BlenderRender--Prism-Render-State/assets/86539171/9c4c40a2-333d-4188-bbc8-a544b8ecf452)
+![RenderOptions](https://github.com/user-attachments/assets/308d6034-1479-410f-8c9d-620dcd44e88e)
 
 Many options are automatically toggled and filled based on the selected options.  For example to enable the passes options, the output type EXRmulti should be selected.
 
@@ -32,7 +32,7 @@ Or any custom AOV names may be utilized by using the Custom checkbox.
 <br>
 <br>
 **Notes:**<br>
-- When BlenderRender is enabled, the default ImageRender will not work in Blender's StateManager without errors.  All other DCC's will have the normal ImageRender behaviour.  See below to temporarily disable BlenderRender or remove if needed.
+- When BlenderRender is enabled, the default ImageRender state will not be available in Blender's StateManager.  All other DCC's will have the normal ImageRender behaviour.  See below to temporarily disable BlenderRender or remove if needed.
 
 - When submitting to a render farm, the Prism option "Submit scenefiles together with jobs" must be checked in order for the farm to use the temporary scenefile.
 
@@ -51,34 +51,40 @@ Blender view layers supported.  An override checkbox allows for single layers to
 <br>
 <br>
 
-Passes per layer: When adding passes, if the override is not checked selected passes will be added/removed to all view layers in the .blend.  But if the override is enabled, passes will be added to the selected layer.  This allows specific passes to be selected for each layer.
+**Passes per layer**: When adding passes, if the Render Layer override is not checked selected passes will be added/removed to all view layers in the .blend.  But if the override is enabled, passes will be added to the selected layer.  This allows specific passes to be selected for each layer.
   
 ![Red_passes](https://github.com/AltaArts/BlenderRender--Prism-Render-State/assets/86539171/729611d4-8f8e-48e4-8d3d-0e3a1d567219)  ![Green_passes](https://github.com/AltaArts/BlenderRender--Prism-Render-State/assets/86539171/5c6ef015-3afe-42b1-901b-63a883d6ac5f)
 
 <br>
 <br>
 
-Resolution scaling: allows quick changing the render's output resolution.  For example when a tracked scene has a non-standard "overscan" resolution, this allows to quickly render a 50% test.  The standard resolution override can be used to select a preset.
+**Resolution scaling**: allows quick changing the render's output resolution.  For example when a tracked scene has a non-standard "overscan" resolution, this allows to quickly render a 50% test.  The standard resolution override can be used to select a preset.
   
 ![Scaling](https://github.com/AltaArts/BlenderRender--Prism-Render-State/assets/86539171/7547fbd7-9c86-472a-bf5e-16838aaeaac6)
 
 <br>
 <br>
 
-Expanded options for output file types and codecs.
+**Expanded options** for output file types and codecs.
   
 ![Codecs](https://github.com/AltaArts/BlenderRender--Prism-Render-State/assets/86539171/f8adb875-5834-443e-a19c-c6b89eefedf0)
 
+<br>
+<br>
 
-- Compositor: option to use or bypass Blenders compositor.
-- Alpha channel: option to render an Alpha channel or not.  This helps reduce un-needed file sizes.
+**Color Space override**:  adds the ability to choose the render output colorspace for saved images.  This option is available for .exr output.  When a new BlenderRender state is made, it will default to the .blend's settings under "Output Properties" (either "Follow Scene" or "Override").  This will use the OCIO config that is being used in the current Blender enviroment.  By default, Blender has its own OCIO config, but an "external" OCIO may be utilized via normal methods.  If rendering with separate machines (render farm), ensure the same OCIO config is loaded on each machine, just as in any other DCC.
 
-- Re-ordered interface
+![Colorspace - inactive](https://github.com/user-attachments/assets/348147f9-419a-4c71-b8bf-f703d04972ee)  ![Colorspace - dropdown](https://github.com/user-attachments/assets/acb2bf6d-558d-4513-9a85-0566c36e65f5)
 
+<br>
+<br>
 
+- **Compositor**: option to use or bypass Blenders compositor.
+- **Persistent Data**: option to enable Blenders Persistent Data to speed up render scene load times.
+- **Alpha channel**: option to render an Alpha channel or not.  This helps reduce un-needed file sizes.
 
-
-
+<br>
+<br>
 
 ## **Installation**
 
