@@ -16,7 +16,7 @@ class Ui_wg_BlenderRender(object):
     def setupUi(self, wg_BlenderRender):
         if not wg_BlenderRender.objectName():
             wg_BlenderRender.setObjectName(u"wg_BlenderRender")
-        wg_BlenderRender.resize(505, 1205)
+        wg_BlenderRender.resize(505, 1240)
         self.verticalLayout = QVBoxLayout(wg_BlenderRender)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
@@ -519,10 +519,6 @@ class Ui_wg_BlenderRender(object):
 
         self.horizontalLayout_5.addWidget(self.label_5)
 
-        self.horizontalSpacer_6 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.horizontalLayout_5.addItem(self.horizontalSpacer_6)
-
         self.chb_overrideLayers = QCheckBox(self.f_renderLayer)
         self.chb_overrideLayers.setObjectName(u"chb_overrideLayers")
         self.chb_overrideLayers.setChecked(True)
@@ -532,11 +528,8 @@ class Ui_wg_BlenderRender(object):
         self.cb_renderLayer = QComboBox(self.f_renderLayer)
         self.cb_renderLayer.setObjectName(u"cb_renderLayer")
         self.cb_renderLayer.setEnabled(False)
-        sizePolicy2 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        sizePolicy2.setHorizontalStretch(0)
-        sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.cb_renderLayer.sizePolicy().hasHeightForWidth())
-        self.cb_renderLayer.setSizePolicy(sizePolicy2)
+        sizePolicy.setHeightForWidth(self.cb_renderLayer.sizePolicy().hasHeightForWidth())
+        self.cb_renderLayer.setSizePolicy(sizePolicy)
         self.cb_renderLayer.setMinimumSize(QSize(250, 0))
 
         self.horizontalLayout_5.addWidget(self.cb_renderLayer)
@@ -606,11 +599,11 @@ class Ui_wg_BlenderRender(object):
         self.f_midMidLt_2.setContentsMargins(-1, -1, 30, -1)
         self.l_fileCompress = QLabel(self.gb_BlenderRender)
         self.l_fileCompress.setObjectName(u"l_fileCompress")
-        sizePolicy3 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
-        sizePolicy3.setHorizontalStretch(0)
-        sizePolicy3.setVerticalStretch(0)
-        sizePolicy3.setHeightForWidth(self.l_fileCompress.sizePolicy().hasHeightForWidth())
-        self.l_fileCompress.setSizePolicy(sizePolicy3)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.l_fileCompress.sizePolicy().hasHeightForWidth())
+        self.l_fileCompress.setSizePolicy(sizePolicy2)
         self.l_fileCompress.setMinimumSize(QSize(40, 0))
 
         self.f_midMidLt_2.addWidget(self.l_fileCompress)
@@ -719,6 +712,30 @@ class Ui_wg_BlenderRender(object):
 
 
         self.verticalLayout_2.addLayout(self.f_midPanelLwr)
+
+        self.f_colorSpace = QHBoxLayout()
+        self.f_colorSpace.setObjectName(u"f_colorSpace")
+        self.f_colorSpace.setContentsMargins(9, -1, 9, -1)
+        self.l_colorSpace = QLabel(self.gb_BlenderRender)
+        self.l_colorSpace.setObjectName(u"l_colorSpace")
+
+        self.f_colorSpace.addWidget(self.l_colorSpace)
+
+        self.chb_colorSpace = QCheckBox(self.gb_BlenderRender)
+        self.chb_colorSpace.setObjectName(u"chb_colorSpace")
+        self.chb_colorSpace.setLayoutDirection(Qt.LeftToRight)
+
+        self.f_colorSpace.addWidget(self.chb_colorSpace)
+
+        self.cb_colorSpace = QComboBox(self.gb_BlenderRender)
+        self.cb_colorSpace.setObjectName(u"cb_colorSpace")
+        sizePolicy.setHeightForWidth(self.cb_colorSpace.sizePolicy().hasHeightForWidth())
+        self.cb_colorSpace.setSizePolicy(sizePolicy)
+
+        self.f_colorSpace.addWidget(self.cb_colorSpace)
+
+
+        self.verticalLayout_2.addLayout(self.f_colorSpace)
 
         self.gb_passes = QGroupBox(self.gb_BlenderRender)
         self.gb_passes.setObjectName(u"gb_passes")
@@ -1142,7 +1159,7 @@ class Ui_wg_BlenderRender(object):
         self.l_outPath_2.setText(QCoreApplication.translate("wg_BlenderRender", u"Master Version:", None))
         self.l_samples.setText(QCoreApplication.translate("wg_BlenderRender", u"Samples:  ", None))
         self.l_outPath.setText(QCoreApplication.translate("wg_BlenderRender", u"Location:  ", None))
-        self.label_5.setText(QCoreApplication.translate("wg_BlenderRender", u"Render layer:", None))
+        self.label_5.setText(QCoreApplication.translate("wg_BlenderRender", u"Render Layer:    ", None))
         self.chb_overrideLayers.setText(QCoreApplication.translate("wg_BlenderRender", u"override", None))
         self.l_format.setText(QCoreApplication.translate("wg_BlenderRender", u"Format:  ", None))
         self.chb_compositor.setText(QCoreApplication.translate("wg_BlenderRender", u"Compositor:  ", None))
@@ -1150,6 +1167,8 @@ class Ui_wg_BlenderRender(object):
         self.chb_persData.setText(QCoreApplication.translate("wg_BlenderRender", u"Persistent Data:", None))
         self.l_bitDepth.setText(QCoreApplication.translate("wg_BlenderRender", u"Bit Depth:  ", None))
         self.chb_alpha.setText(QCoreApplication.translate("wg_BlenderRender", u"Alpha:  ", None))
+        self.l_colorSpace.setText(QCoreApplication.translate("wg_BlenderRender", u"Color Space:      ", None))
+        self.chb_colorSpace.setText(QCoreApplication.translate("wg_BlenderRender", u"override", None))
         self.gb_passes.setTitle(QCoreApplication.translate("wg_BlenderRender", u"Render Passes", None))
         self.b_addPasses.setText(QCoreApplication.translate("wg_BlenderRender", u"Add Passes", None))
         self.gb_submit.setTitle(QCoreApplication.translate("wg_BlenderRender", u"Submit to Render Farm", None))
@@ -1175,4 +1194,5 @@ class Ui_wg_BlenderRender(object):
         self.l_pathLast.setText(QCoreApplication.translate("wg_BlenderRender", u"None", None))
         self.b_pathLast.setText(QCoreApplication.translate("wg_BlenderRender", u"...", None))
     # retranslateUi
+
 
