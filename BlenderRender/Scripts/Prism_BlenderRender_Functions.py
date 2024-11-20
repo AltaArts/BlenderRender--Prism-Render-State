@@ -663,10 +663,19 @@ class Prism_BlenderRender_Functions(object):
         
         if rSettings["origImageformat"] in ["OPEN_EXR", "OPEN_EXR_MULTILAYER"]:
             if "origOvrColorspace" in rSettings:
-                bpy.context.scene.render.image_settings.color_management = rSettings["origOvrColorspace"]
+                    bpy.context.scene.render.image_settings.color_management = rSettings["origOvrColorspace"]
 
+        #   Revert Overrided Colorspace to original
             if "origColorspace" in rSettings:   
-                bpy.context.scene.render.image_settings.linear_colorspace_settings.name = rSettings["origColorspace"]
+                try:
+                    #   Try to restore to original
+                    bpy.context.scene.render.image_settings.linear_colorspace_settings.name = rSettings["origColorspace"]
+                except:
+                    #   This could happen if there was no Colorspace in the Blend's UI Override combobox
+                    if rSettings["origColorspace"] == "":
+                        logger.warning("ERROR: Unable to restore original Override Colorspace: BLANK")
+                    else:
+                        logger.warning(f"ERROR: Unable to restore original Override Colorspace: {rSettings['origColorspace']}")
 
         if rSettings["overrideLayers"]:
             if "origLayers" in rSettings:
