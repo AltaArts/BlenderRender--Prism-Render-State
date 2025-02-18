@@ -7,6 +7,12 @@ You can find more information on the website:
 
 https://prism-pipeline.com/
 
+<br/>
+
+**Tested up to Prism 2.0.15**
+
+<br/>
+
 ![Overview](https://github.com/user-attachments/assets/86d953bf-729c-4d3e-aa44-7af7a921391c)
 
 BlenderRender adds a new state to the StateManager.  This state adds additional functionality to Prism's Blender rendering compared to the more generic default ImageRender.  BlenderRender will only be available in the StateManager of Blender and will not affect other DCC's.  The options selected in the state will not affect the scenefile itself and this plugin will not over-write any existing Prism files, but will patch Prism Blender functions at runtime.
