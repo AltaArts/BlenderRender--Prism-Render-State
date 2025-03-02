@@ -9,7 +9,9 @@ https://prism-pipeline.com/
 
 <br/>
 
-**Tested up to Prism 2.0.15**
+**Tested working up to Prism 2.0.14**
+
+**There is an issue with Prism 2.0.15 - WIP**
 
 <br/>
 
