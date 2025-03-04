@@ -340,6 +340,8 @@ class Prism_BlenderRender_Functions(object):
         rSettings["fileextension"] = bpy.context.scene.render.use_file_extension
         rSettings["resolutionpercent"] = bpy.context.scene.render.resolution_percentage
 
+        bpy.context.scene.render.image_settings.file_format = fileFormat
+
 
 #################################################################################
 #    vvvvvvvvvvvvvvvvvvvvv           ADDED         vvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
@@ -358,7 +360,7 @@ class Prism_BlenderRender_Functions(object):
 
         self.blendPlugin.setTempScene(rSettings, origin)    
 
-        rSettings = self.blendPlugin.setupLayers(rSettings, mode="Set")
+        rSettings = self.setupLayers(rSettings, mode="Set")
         aovName = rSettings["aovName"]
         tempOutputName = rSettings["outputName"]
         tempOutputName = tempOutputName.replace("beauty", aovName)
@@ -374,7 +376,7 @@ class Prism_BlenderRender_Functions(object):
         rSettings["origOutputName"] = rSettings["outputName"]
         bpy.context.scene["PrismIsRendering"] = True
         bpy.context.scene.render.filepath = rSettings["outputName"]
-        bpy.context.scene.render.image_settings.file_format = fileFormat
+
         bpy.context.scene.render.use_overwrite = True
         bpy.context.scene.render.use_file_extension = False
         # bpy.context.scene.render.resolution_percentage = 100                      #   COMMENTED OUT FOR TEMP SCENE
@@ -615,7 +617,7 @@ class Prism_BlenderRender_Functions(object):
     @err_catcher(name=__name__)
     def sm_render_undoRenderSettings(self, origin, rSettings):
         import bpy, shutil                                                              #   ADDED
-
+        
         if "width" in rSettings:
             bpy.context.scene.render.resolution_x = rSettings["width"]
         if "height" in rSettings:

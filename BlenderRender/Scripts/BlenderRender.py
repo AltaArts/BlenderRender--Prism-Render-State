@@ -1812,13 +1812,13 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
             if not self.gb_submit.isHidden() and self.gb_submit.isChecked():
                 handleMaster = "media" if self.isUsingMasterVersion() else False
-                plugin = self.core.plugins.getRenderfarmPlugin(self.cb_manager.currentText())
+                farmPlugin = self.core.plugins.getRenderfarmPlugin(self.cb_manager.currentText())
                 if hasattr(self, "chb_redshift") and self.chb_redshift.isChecked() and not self.w_redshift.isHidden():
                     sceneDescription = "redshift"
                 else:
                     sceneDescription = None
 
-                result = plugin.sm_render_submitJob(
+                result = farmPlugin.sm_render_submitJob(
                     self,
                     rSettings["outputName"],
                     parent,
@@ -1840,9 +1840,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
         if not self.renderingStarted:
             self.core.appPlugin.sm_render_undoRenderSettings(self, rSettings)
-
             self.core.saveScene(versionUp=False, prismReq=False)                        
-
 
         if result == "publish paused":
             return [self.state.text(0) + " - publish paused"]
