@@ -202,7 +202,14 @@ class Prism_BlenderRender_Functions(object):
         import bpy, operator                                                    #   ADDED
 
         availableAOVs = self.getAvailableAOVs(renderLayer)                      #   EDITED
-        curlayer = bpy.context.scene.view_layers[renderLayer]                   #   EDITED
+
+        #   Get currently selected view layer
+        try:                                                                        #   ADDED
+            curlayer = bpy.context.scene.view_layers[renderLayer]                   #   ADDED
+        #   Handles the issue with a renamed view-layer
+        except KeyError:                                                            #   ADDED
+            curlayer = bpy.context.window_manager.windows[0].view_layer
+            
         aovNames = []
         for aa in availableAOVs:
             val = None
@@ -222,7 +229,13 @@ class Prism_BlenderRender_Functions(object):
     def getAvailableAOVs(self, renderLayer):                                        #   EDITED
         import bpy                                                                  #   ADDED
 
-        curlayer = bpy.context.scene.view_layers[renderLayer]                       #   EDITED
+        #   Get currently selected view layer
+        try:                                                                        #   ADDED
+            curlayer = bpy.context.scene.view_layers[renderLayer]                   #   ADDED
+        #   Handles the issue with a renamed view-layer
+        except KeyError:                                                            #   ADDED
+            curlayer = bpy.context.window_manager.windows[0].view_layer
+
         aovParms = [x for x in dir(curlayer) if x.startswith("use_pass_")]
         aovParms += [
             "cycles." + x for x in dir(curlayer.cycles) if x.startswith("use_pass_")
