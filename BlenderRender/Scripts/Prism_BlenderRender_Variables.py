@@ -45,7 +45,7 @@ import os
 
 class Prism_BlenderRender_Variables(object):
     def __init__(self, core, plugin):
-        self.version = "v2.0.5-1.7"
+        self.version = "v2.1"
         self.pluginName = "BlenderRender"
         self.pluginType = "Custom"
         self.platforms = ["Windows", "Linux", "Darwin"]

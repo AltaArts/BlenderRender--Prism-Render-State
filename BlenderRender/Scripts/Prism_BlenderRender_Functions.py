@@ -360,13 +360,21 @@ class Prism_BlenderRender_Functions(object):
 #    vvvvvvvvvvvvvvvvvvvvv           ADDED         vvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
         rSettings["origSamples"] = bpy.context.scene.cycles.samples
+
+        rSettings["origImageType"] = bpy.context.scene.render.image_settings.media_type                     ##  ADDED
+
         rSettings["origImageformat"] = bpy.context.scene.render.image_settings.file_format
         rSettings["origExrCodec"] = bpy.context.scene.render.image_settings.exr_codec
         rSettings["origBitDepth"] = bpy.context.scene.render.image_settings.color_depth
         rSettings["origAlpha"] = bpy.context.scene.render.image_settings.color_mode
         rSettings["origPersData"] = bpy.context.scene.render.use_persistent_data
+
         rSettings["origUseComp"] = bpy.context.scene.render.use_compositing
-        rSettings["origUseNode"] = bpy.context.scene.use_nodes
+        try:
+            rSettings["origUseNode"] = bpy.context.scene.use_nodes
+        except:
+            logger.debug("The Blender Compositor 'Use Nodes' is deprecated.")
+
         if fileFormat in ["OPEN_EXR", "OPEN_EXR_MULTILAYER"]:
             rSettings["origOvrColorspace"] = bpy.context.scene.render.image_settings.color_management
             rSettings["origColorspace"] = bpy.context.scene.render.image_settings.linear_colorspace_settings.name
@@ -518,7 +526,10 @@ class Prism_BlenderRender_Functions(object):
             ctx['scene'].cycles.samples = int(rSettings["renderSamples"])
             ctx['scene'].render.use_persistent_data = (rSettings["persData"])
             ctx['scene'].render.use_compositing = rSettings["useComp"]
-            ctx['scene'].use_nodes = rSettings["useComp"]
+            try:
+                ctx['scene'].use_nodes = rSettings["useComp"]
+            except:
+                logger.debug("The Blender Compositor 'Use Nodes' is deprecated.")
 
             selFileExt = rSettings["imageFormat"]
                            
@@ -531,6 +542,11 @@ class Prism_BlenderRender_Functions(object):
             elif selFileExt in [".png", "png", ".PNG", "PNG"]:
                 selFileExt = "PNG"
 
+            if selFileExt == "OPEN_EXR_MULTILAYER":
+                ctx['scene'].render.image_settings.media_type = "MULTI_LAYER_IMAGE"
+            else:
+                ctx['scene'].render.image_settings.media_type = "IMAGE"
+            
             ctx['scene'].render.image_settings.file_format =  selFileExt
 
             if selFileExt in ["OPEN_EXR", "OPEN_EXR_MULTILAYER", "PNG"]:
@@ -662,7 +678,10 @@ class Prism_BlenderRender_Functions(object):
             bpy.context.scene.render.use_compositing = rSettings["origUseComp"]
 
         if "origUseNode" in rSettings:
-            bpy.context.scene.use_nodes = rSettings["origUseNode"]
+            try:
+                bpy.context.scene.use_nodes = rSettings["origUseNode"]
+            except:
+                logger.debug("The Blender Compositor 'Use Nodes' is deprecated.")
 
         if "origImageformat" in rSettings:
             bpy.context.scene.render.image_settings.file_format = rSettings["origImageformat"]
@@ -761,7 +780,6 @@ class Prism_BlenderRender_Functions(object):
 
         if command == "Status":
             samples = bpy.context.scene.cycles.samples
-
             return samples
     
         elif command == "Set":
@@ -773,13 +791,17 @@ class Prism_BlenderRender_Functions(object):
         import bpy
 
         if command == "Status":
-            isChecked = bpy.context.scene.use_nodes
-
+            isChecked = bpy.context.scene.render.use_compositing
             return isChecked
     
         elif command == "Set":
             bpy.context.scene.render.use_compositing = useComp
-            bpy.context.scene.use_nodes = useComp
+
+            #   This will be deprecated by Blender 6.0
+            try:
+                bpy.context.scene.use_nodes = useComp
+            except:
+                logger.debug("The Blender Compositor 'Use Nodes' is deprecated.")
     
 
     @err_catcher(name=__name__)                                 #   ADDED
@@ -788,7 +810,6 @@ class Prism_BlenderRender_Functions(object):
 
         if command == "Status":
             isChecked = bpy.context.scene.render.use_persistent_data
-
             return isChecked
         
         elif command == "Set":
@@ -854,7 +875,13 @@ class Prism_BlenderRender_Functions(object):
 
             elif imageFormat == ".exrMulti":
                 blendImageFormat = "OPEN_EXR_MULTILAYER"
-            bpy.context.scene.render.image_settings.file_format = blendImageFormat
+
+            if blendImageFormat == "OPEN_EXR_MULTILAYER":
+                bpy.context.scene.render.image_settings.media_type = "MULTI_LAYER_IMAGE"
+            else:
+                bpy.context.scene.render.image_settings.media_type = "IMAGE"
+            
+            bpy.context.scene.render.image_settings.file_format =  blendImageFormat
 
             bpy.context.scene.render.image_settings.exr_codec = rSettings["exrCodec"]
             bpy.context.scene.render.image_settings.color_depth = rSettings["exrBitDepth"]
