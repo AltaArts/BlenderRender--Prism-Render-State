@@ -622,7 +622,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         useComp = self.useCompositor(command="Status")                    
         self.chb_compositor.setChecked(useComp)
 
-        usePD = self.getPersistantData(command="Status")                  
+        usePD = self.getPersistentData(command="Status")                  
         self.chb_persData.setChecked(usePD)
 
         ovrColorSpace = self.getColorSpaces(command="isOverride")
@@ -1219,14 +1219,14 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
 
     @err_catcher(name=__name__)                             
-    def getPersistantData (self, command, usePD=False):
+    def getPersistentData (self, command, usePD=False):
         if command == "Status":
-            isChecked = self.core.appPlugin.getPersistantData(command="Status")
+            isChecked = self.core.appPlugin.getPersistentData(command="Status")
 
             return isChecked
         
         elif command == "Set":
-            self.core.appPlugin.getPersistantData(command="Set", usePD=usePD)
+            self.core.appPlugin.getPersistentData(command="Set", usePD=usePD)
 
 
     @err_catcher(name=__name__)                             

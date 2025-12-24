@@ -100,8 +100,6 @@ class Prism_BlenderRender_Functions(object):
     def applyBlendPatch(self):
         #   Ensures it is not using the Blender_unloaded plugin
         if hasattr(self.blendPlugin, "startup"):
-            # try:
-
             logger.debug("*** Patching Blender Plugin ***")
             
             #   Functions in Prism_Blender_Functions.py to be patched
@@ -134,7 +132,7 @@ class Prism_BlenderRender_Functions(object):
 
             addFuncList = ["getRenderSamples",
                            "useCompositor",
-                           "getPersistantData",
+                           "getPersistentData",
                            "getRenderLayers",
                            "getColorSpaces",
                            "setTempScene",
@@ -156,7 +154,7 @@ class Prism_BlenderRender_Functions(object):
     @err_catcher(name=__name__)
     def onStateManagerOpen(self, origin):
         if self.core.appPlugin.pluginName == "Blender":
-            #   Will only load BlenderRender state if in Blender
+            #   Will only load BlenderRender if in Blender
             try:
                 origin.loadState(BlenderRenderClass)
                 logger.debug("Added BlenderRender state")
@@ -204,10 +202,10 @@ class Prism_BlenderRender_Functions(object):
         availableAOVs = self.getAvailableAOVs(renderLayer)                      #   EDITED
 
         #   Get currently selected view layer
-        try:                                                                        #   ADDED
-            curlayer = bpy.context.scene.view_layers[renderLayer]                   #   ADDED
+        try:                                                                    #   ADDED
+            curlayer = bpy.context.scene.view_layers[renderLayer]               #   ADDED
         #   Handles the issue with a renamed view-layer
-        except KeyError:                                                            #   ADDED
+        except KeyError:                                                        #   ADDED
             curlayer = bpy.context.window_manager.windows[0].view_layer
             
         aovNames = []
@@ -220,6 +218,8 @@ class Prism_BlenderRender_Functions(object):
                 pass
 
             if val:
+                if aa["name"] == "Cryptomatte Accurate" and bpy.app.version >= (4, 0, 0):
+                    continue
                 aovNames.append(aa["name"])
 
         return aovNames
@@ -331,11 +331,6 @@ class Prism_BlenderRender_Functions(object):
 
         nodeAOVs = self.blendPlugin.getNodeAOVs()                                       #   EDITED
         imgFormat = origin.cb_format.currentText()
-        # if imgFormat in [".exr", ".exrMulti"]:                                        #   COMMENTED OUT
-        #     if not nodeAOVs and self.getViewLayerAOVs():
-        #         fileFormat = "OPEN_EXR_MULTILAYER"
-        #     else:
-        #         fileFormat = "OPEN_EXR"
 
         if imgFormat == ".exr":                                                         #   EDITED
             fileFormat = "OPEN_EXR"                                                     
@@ -348,12 +343,10 @@ class Prism_BlenderRender_Functions(object):
 
         rSettings["prev_start"] = bpy.context.scene.frame_start
         rSettings["prev_end"] = bpy.context.scene.frame_end
-        rSettings["fileformat"] = bpy.context.scene.render.image_settings.file_format
+        # rSettings["fileformat"] = bpy.context.scene.render.image_settings.file_format
         rSettings["overwrite"] = bpy.context.scene.render.use_overwrite
         rSettings["fileextension"] = bpy.context.scene.render.use_file_extension
         rSettings["resolutionpercent"] = bpy.context.scene.render.resolution_percentage
-
-        bpy.context.scene.render.image_settings.file_format = fileFormat
 
 
 #################################################################################
@@ -361,7 +354,7 @@ class Prism_BlenderRender_Functions(object):
 
         rSettings["origSamples"] = bpy.context.scene.cycles.samples
 
-        rSettings["origImageType"] = bpy.context.scene.render.image_settings.media_type                     ##  ADDED
+        rSettings["origImageType"] = bpy.context.scene.render.image_settings.media_type
 
         rSettings["origImageformat"] = bpy.context.scene.render.image_settings.file_format
         rSettings["origExrCodec"] = bpy.context.scene.render.image_settings.exr_codec
@@ -655,8 +648,14 @@ class Prism_BlenderRender_Functions(object):
             bpy.context.scene.frame_start = rSettings["prev_start"]
         if "prev_end" in rSettings:
             bpy.context.scene.frame_end = rSettings["prev_end"]
-        if "fileformat" in rSettings:
-            bpy.context.scene.render.image_settings.file_format = rSettings["fileformat"]
+        # if "fileformat" in rSettings:
+        #     if rSettings["fileformat"] == "OPEN_EXR_MULTILAYER":
+        #         bpy.context.scene.render.image_settings.media_type = "MULTI_LAYER_IMAGE"
+        #     else:
+        #         bpy.context.scene.render.image_settings.media_type = "IMAGE"
+
+        #     bpy.context.scene.render.image_settings.file_format = rSettings["fileformat"]
+
         if "overwrite" in rSettings:
             bpy.context.scene.render.use_overwrite = rSettings["overwrite"]
         if "fileextension" in rSettings:
@@ -682,6 +681,9 @@ class Prism_BlenderRender_Functions(object):
                 bpy.context.scene.use_nodes = rSettings["origUseNode"]
             except:
                 logger.debug("The Blender Compositor 'Use Nodes' is deprecated.")
+        
+        if "origImageType" in rSettings:
+            bpy.context.scene.render.image_settings.media_type = rSettings["origImageType"]
 
         if "origImageformat" in rSettings:
             bpy.context.scene.render.image_settings.file_format = rSettings["origImageformat"]
@@ -805,7 +807,7 @@ class Prism_BlenderRender_Functions(object):
     
 
     @err_catcher(name=__name__)                                 #   ADDED
-    def getPersistantData(self, command, usePD=False):
+    def getPersistentData(self, command, usePD=False):
         import bpy
 
         if command == "Status":
@@ -849,40 +851,45 @@ class Prism_BlenderRender_Functions(object):
     
 
     @err_catcher(name=__name__)                                 #   ADDED
-    def setTempScene(self, rSettings, origin):    
+    def setTempScene(self, rSettings, origin):   
         import bpy
 
+        #   Set Render Rez Percentage
         bpy.context.scene.render.resolution_percentage = int(origin.cb_scaling.currentText())
 
+        #   Set Use Comp
         compEnabled = rSettings["useComp"]
         self.useCompositor(command="Set", useComp=compEnabled)
 
+        #   Set Use Persistent Data
         persData = rSettings["persData"]
-        self.getPersistantData(command="Set", usePD=persData)
+        self.getPersistentData(command="Set", usePD=persData)
 
+        #   Set Samples
         samples = int(rSettings["renderSamples"])
         self.getRenderSamples(command="Set", samples=samples)
 
+        #   Set Alpha
         imageFormat = rSettings["imageFormat"]
         if rSettings["useAlpha"] == False:
             alpha = "RGB"
         else:
             alpha = "RGBA"
 
-        if imageFormat in [".exr", "exrMulti"]:
+        #   Set Media Type (after Blender 5.0)
+        if imageFormat == ".exrMulti":
+            bpy.context.scene.render.image_settings.media_type = "MULTI_LAYER_IMAGE"
+        else:
+            bpy.context.scene.render.image_settings.media_type = "IMAGE"
+
+        if imageFormat in [".exr", ".exrMulti"]:
             if imageFormat == ".exr":
                 blendImageFormat = "OPEN_EXR"
 
             elif imageFormat == ".exrMulti":
                 blendImageFormat = "OPEN_EXR_MULTILAYER"
-
-            if blendImageFormat == "OPEN_EXR_MULTILAYER":
-                bpy.context.scene.render.image_settings.media_type = "MULTI_LAYER_IMAGE"
-            else:
-                bpy.context.scene.render.image_settings.media_type = "IMAGE"
             
             bpy.context.scene.render.image_settings.file_format =  blendImageFormat
-
             bpy.context.scene.render.image_settings.exr_codec = rSettings["exrCodec"]
             bpy.context.scene.render.image_settings.color_depth = rSettings["exrBitDepth"]
             bpy.context.scene.render.image_settings.color_mode = alpha
