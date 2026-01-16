@@ -43,7 +43,7 @@
 import os
 import sys
 import time
-import platform
+
 
 from qtpy.QtCore import *
 from qtpy.QtGui import *
@@ -68,6 +68,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         self.canSetVersion = True
         self.customContext = None
         self.allowCustomContext = False
+        self.imageMode = None
 
         self.setupUi(self)
 
@@ -126,37 +127,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         self.mediaType = "3drenders"
         self.tasknameRequired = True
 
-        self.formatOptions = {
-            ".exr": {
-                "bitDepths": ["16", "32"],
-                "codec": ["NONE", "PIZ", "RLE", "ZIP", "ZIPS", "DWAA", "DWAB"],
-                "compressWidget": self.cb_exrCodec,
-                "compressLabel": "Codec: ",
-                "alpha": True,
-                "colorSpace": True
-                },
-            ".exrMulti": {
-                "bitDepths": ["16", "32"],
-                "codec": ["NONE", "PIZ", "RLE", "ZIP", "ZIPS", "DWAA", "DWAB"],
-                "compressWidget": self.cb_exrCodec,
-                "compressLabel": "Codec: ",
-                "alpha": True,
-                "colorSpace": True
-                },
-            ".png": {
-                "bitDepths": ["8", "16"],
-                "compressWidget": self.sp_pngCompress,
-                "compressLabel": "Compression %: ",
-                "alpha": True,
-                "colorSpace": False
-                },
-            ".jpg": {
-                "compressWidget": self.sp_jpegQual,
-                "compressLabel": "Quality %: ",
-                "alpha": False,
-                "colorSpace": False
-                },
-            }
+        self.formatOptions = self.core.appPlugin.formatOptions
 
         self.cb_format.addItems(self.formatOptions.keys())
 
@@ -173,6 +144,9 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         self.cb_scaling.addItems(self.scalings)
         tempIdx = self.cb_scaling.findText("100")
         self.cb_scaling.setCurrentIndex(tempIdx)
+
+        imageModes = ["Single Layer", "Multi Layer"]
+        self.cb_imageMode.addItems(imageModes)
 
         self.resolutionPresets = self.core.projects.getResolutionPresets()
         if "Get from rendersettings" not in self.resolutionPresets:
@@ -211,7 +185,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
         #   If State exists in .blend, it will load it
         if stateData is not None:
-            self.loadStateData(stateData)
+            self.loadData(stateData)
 
         #   Sets Defaults for State when new
         else:   
@@ -220,8 +194,6 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
     @err_catcher(name=__name__)
     def connectEvents(self):
-        self.e_aovNameCustom.textChanged.connect(self.stateManager.saveStatesToScene)
-        self.chb_customAOV.toggled.connect(self.updateUi)
         self.e_name.textChanged.connect(self.nameChanged)
         self.e_name.editingFinished.connect(self.stateManager.saveStatesToScene)
         self.cb_context.activated.connect(self.onContextTypeChanged)
@@ -251,7 +223,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         self.chb_overrideLayers.toggled.connect(self.updateUi)
         self.cb_renderLayer.currentIndexChanged.connect(self.updateUi)
         self.chb_compositor.toggled.connect(self.stateManager.saveStatesToScene)            
-        self.chb_persData.toggled.connect(self.stateManager.saveStatesToScene)              
+        self.chb_persData.toggled.connect(self.stateManager.saveStatesToScene)
         self.cb_format.currentIndexChanged.connect(self.setupFormatOptions)                 
         self.cb_format.activated.connect(self.stateManager.saveStatesToScene)
         self.cb_exrCodec.activated.connect(self.stateManager.saveStatesToScene)             
@@ -261,6 +233,8 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         self.sp_jpegQual.editingFinished.connect(self.stateManager.saveStatesToScene)       
         self.chb_alpha.toggled.connect(self.updateUi)
         self.chb_colorSpace.toggled.connect(self.updateUi)
+        self.chb_enablePasses.toggled.connect(self.updateUi)
+        self.cb_imageMode.currentIndexChanged.connect(lambda: self.setImageMode())
         self.cb_colorSpace.activated.connect(self.stateManager.saveStatesToScene)
         self.gb_submit.toggled.connect(self.rjToggled)
         self.cb_manager.activated.connect(self.managerChanged)
@@ -276,13 +250,10 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         self.sp_dlConcurrentTasks.editingFinished.connect(self.stateManager.saveStatesToScene)
         self.sp_dlGPUpt.editingFinished.connect(self.gpuPtChanged)
         self.le_dlGPUdevices.editingFinished.connect(self.gpuDevicesChanged)
-        self.gb_passes.toggled.connect(self.stateManager.saveStatesToScene)
         self.b_addPasses.clicked.connect(self.showPasses)
         self.lw_passes.customContextMenuRequested.connect(self.rclickPasses)
         self.b_pathLast.clicked.connect(self.showLastPathMenu)
-        self.lw_passes.itemDoubleClicked.connect(
-            lambda x: self.core.appPlugin.sm_render_openPasses(self)
-            )
+        self.lw_passes.itemDoubleClicked.connect(lambda x: self.core.appPlugin.sm_render_openPasses(self))
 
 
     @err_catcher(name=__name__)
@@ -292,20 +263,6 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
         tip = "Click to change Identifier.  This will also rename the State name."
         self.b_changeTask.setToolTip(tip)
-
-        tip = ("Auto-generated AOV name based on output file type and alpha.\n"
-               "EXR multilayer:  RGB-Data or RGBA-Data\n"
-               "EXR:  RGB or RGBA\n"
-               "PNG:  RGB or RGBA\n"
-               "JPG:  beauty"
-               )
-        self.e_aovNameAuto.setToolTip(tip)
-
-        tip = "Custom AOV name."
-        self.e_aovNameCustom.setToolTip(tip)
-
-        tip = "Toggle to allow creating custom AOV name."
-        self.chb_customAOV.setToolTip(tip)
 
         tip = ("Frame range type to be rendered.\n"
                "Defaults to:\n"
@@ -382,24 +339,19 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
 
     @err_catcher(name=__name__)
-    def loadStateData(self, data):
+    def loadData(self, data):
         if "contextType" in data:
             self.setContextType(data["contextType"])
+
         if "customContext" in data:
             self.customContext = data["customContext"]
+
         if "taskname" in data:
             self.setTaskname(data["taskname"])
 
-        if "useCustomAOV" in data:
-            checked = data["useCustomAOV"]
-            self.chb_customAOV.setChecked(checked)
-            self.aovNameSetup()
-
-        if "aovNameCustom" in data:                                         
-            self.e_aovNameCustom.setText(data["aovNameCustom"])
-
         if "stateName" in data:
             self.e_name.setText(data["stateName"])
+
         elif "statename" in data:
             self.e_name.setText(data["statename"] + " - {identifier}")
 
@@ -431,8 +383,10 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
         if "startframe" in data:
             self.sp_rangeStart.setValue(int(data["startframe"]))
+
         if "endframe" in data:
             self.sp_rangeEnd.setValue(int(data["endframe"]))
+
         if "frameExpression" in data:
             self.le_frameExpression.setText(data["frameExpression"])
 
@@ -474,6 +428,10 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
             if idx != -1:
                 self.cb_renderLayer.setCurrentIndex(idx)
                 self.stateManager.saveStatesToScene()
+
+        if "imageMode" in data:
+            self.imageMode = data["imageMode"]
+            self.setImageMode(setUI=True)
 
         if "outputFormat" in data:
             idx = self.cb_format.findText(data["outputFormat"])
@@ -520,6 +478,15 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
             if idx != -1:
                 self.cb_colorSpace.setCurrentIndex(idx)
 
+        if "enablePasses" in data:
+            self.chb_enablePasses.setChecked(data["enablePasses"])
+
+        if "useSepBeauty" in data:
+            self.chb_useSepBeauty.setChecked(data["useSepBeauty"])
+
+        if "useSepCrypto" in data:
+            self.chb_useSepCrypto.setChecked(data["useSepCrypto"])
+
         if "submitrender" in data:
             self.gb_submit.setChecked(eval(data["submitrender"]))
 
@@ -532,34 +499,44 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
         if "rjprio" in data:
             self.sp_rjPrio.setValue(int(data["rjprio"]))
+
         if "rjframespertask" in data:
             self.sp_rjFramesPerTask.setValue(int(data["rjframespertask"]))
+
         if "rjtimeout" in data:
             self.sp_rjTimeout.setValue(int(data["rjtimeout"]))
+
         if "rjsuspended" in data:
             self.chb_rjSuspended.setChecked(eval(data["rjsuspended"]))
+
         if "osdependencies" in data:
             self.chb_osDependencies.setChecked(eval(data["osdependencies"]))
+
         if "osupload" in data:
             self.chb_osUpload.setChecked(eval(data["osupload"]))
+
         if "ospassets" in data:
             self.chb_osPAssets.setChecked(eval(data["ospassets"]))
+
         if "osslaves" in data:
             self.e_osSlaves.setText(data["osslaves"])
+
         if "dlconcurrent" in data:
             self.sp_dlConcurrentTasks.setValue(int(data["dlconcurrent"]))
+
         if "dlgpupt" in data:
             self.sp_dlGPUpt.setValue(int(data["dlgpupt"]))
             self.gpuPtChanged()
+
         if "dlgpudevices" in data:
             self.le_dlGPUdevices.setText(data["dlgpudevices"])
             self.gpuDevicesChanged()
-        if "enablepasses" in data:
-            self.gb_passes.setChecked(eval(data["enablepasses"]))
+
         if "lastexportpath" in data:
             lePath = self.core.fixPath(data["lastexportpath"])
             self.l_pathLast.setText(lePath)
             self.l_pathLast.setToolTip(lePath)
+            
         if "stateenabled" in data:
             if type(data["stateenabled"]) == int:
                 self.state.setCheckState(
@@ -573,9 +550,6 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
     @err_catcher(name=__name__)
     def createNewStateData(self):
-        self.e_aovNameCustom.hide()
-        self.e_aovNameCustom.setText("beauty")
-
         context = self.getCurrentContext()
         if context.get("type") == "asset":
             self.setRangeType("Single Frame")
@@ -607,23 +581,25 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         if curIdx != -1:
             self.cb_renderLayer.setCurrentIndex(curIdx)
 
-        #   Options for new instance of BlenderRender
+        self.imageMode = "single"
+        self.setImageMode(setUI=True)
+
+        #   Defaults for New Instance of BlenderRender
+        defaults = self.core.appPlugin.getAovDefault("Single Layer")
+
         newOptions = {                                                    
-            "format": ".exr",                                                       
-            "codec": "DWAA",
-            "bitDepth": "16",
-            "useAlpha": True
+            "format": defaults["format"],                                                       
+            "codec": defaults["codec"],
+            "bitDepth": defaults["bitdepth"],
+            "useAlpha": self.core.appPlugin.defaultSettings["useAlpha"]
             }
         self.setupFormatOptions(mode="New", loadOptions=newOptions)       
 
-        samples = self.getRenderSamples(command="Status")
+        samples = self.getRenderSamples(command="status")
         self.e_samples.setText(str(samples))                              
 
-        useComp = self.useCompositor(command="Status")                    
-        self.chb_compositor.setChecked(useComp)
-
-        usePD = self.getPersistentData(command="Status")                  
-        self.chb_persData.setChecked(usePD)
+        self.chb_compositor.setChecked(self.core.appPlugin.defaultSettings["useComp"])
+        self.chb_persData.setChecked(self.core.appPlugin.defaultSettings["usePersistentData"])
 
         ovrColorSpace = self.getColorSpaces(command="isOverride")
         self.chb_colorSpace.setChecked(ovrColorSpace)
@@ -641,7 +617,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         self.w_context.setHidden(not self.allowCustomContext)
         self.refreshContext()
 
-        # update Cams
+        #   Update Cameras
         self.cb_cam.clear()
         self.camlist = camNames = []
 
@@ -706,14 +682,18 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
             tip = "Use scenefile Colorspace."
         self.cb_colorSpace.setToolTip(tip)
 
-        if self.cb_format.currentText() == ".exrMulti":
-            tip = "Opens dialog to select AOV passes"
-        else:
-            tip = "Select EXR multilayer to enable AOV passes"
-        self.b_addPasses.setToolTip(tip)
+        passesEnabled = self.chb_enablePasses.isChecked()
+        self.gb_passes.setChecked(passesEnabled)
+        self.gb_passes.setEnabled(passesEnabled)
+        self.gb_passes.setVisible(passesEnabled)
+        self.lw_passes.setVisible(passesEnabled)
+        self.cb_imageMode.setVisible(passesEnabled)
+
+        multiLayer = passesEnabled and self.imageMode == "multi"
+        self.chb_useSepBeauty.setVisible(multiLayer)
+        self.chb_useSepCrypto.setVisible(multiLayer)
 
         self.nameChanged(self.e_name.text())
-        self.aovNameSetup()
         self.stateManager.saveStatesToScene()
 
         return True
@@ -722,17 +702,16 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
     @err_catcher(name=__name__)
     def setupFormatOptions(self, index=None, mode=None, loadOptions=None):
         for widget in [
-            self.l_bitDepth, self.cb_exrBitDepth, self.cb_pngBitDepth,
+            self.cb_exrBitDepth, self.cb_pngBitDepth,
             self.cb_exrCodec, self.sp_pngCompress, self.sp_jpegQual, self.chb_alpha,
             self.l_colorSpace, self.chb_colorSpace, self.cb_colorSpace
             ]:
             widget.hide()
 
+
         if mode in ["New", "Load"]:
             for fullFormat in self.formatOptions:
-                format = fullFormat.strip('.')
-                if format == "exrMulti":
-                    format = "exr"
+                format = fullFormat.lower()
                 
                 if "bitDepths" in self.formatOptions[fullFormat]:
                     bitDepthComboBox = getattr(self, f"cb_{format}BitDepth")
@@ -753,21 +732,22 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         currentFormat = self.cb_format.currentText()
         options = self.formatOptions.get(currentFormat, {})
 
-        self.l_fileCompress.setText(options.get("compressLabel", ""))
+        # self.l_fileCompress.setText(options.get("compressLabel", ""))             #   TODO DEAL WITH UI LABELS
 
         if "bitDepths" in options:
-            self.l_bitDepth.show()
+            # self.l_bitDepth.show()
 
-            if currentFormat in [".exr", ".exrMulti"]:
+            if currentFormat == "EXR":
                 self.cb_exrBitDepth.show()
-            elif currentFormat == ".png":
+            elif currentFormat == "PNG":
                 self.cb_pngBitDepth.show()
 
         if "codec" in options:
             self.cb_exrCodec.show()
 
         if "compressWidget" in options:
-            options["compressWidget"].show()
+            compressWidget = getattr(self, options["compressWidget"])
+            compressWidget.show()
 
         if "alpha" in options and options["alpha"]:
             self.chb_alpha.show()
@@ -781,30 +761,25 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
 
     @err_catcher(name=__name__)                                     
-    def aovNameSetup(self, checked=False):
-        autoName = not self.chb_customAOV.isChecked()
-        fileType = self.cb_format.currentText()
-        useAlpha = self.chb_alpha.isChecked()
+    def setImageMode(self, setUI=False):
+        if not setUI:
+            modeText = self.cb_imageMode.currentText()
+            if modeText == "Single Layer":
+                self.imageMode = "single"
+            elif modeText == "Multi Layer":
+                self.imageMode = "multi"
 
-        self.e_aovNameAuto.setVisible(autoName)
-        self.e_aovNameCustom.setVisible(not autoName)
+        elif setUI:
+            if self.imageMode == "single":
+                modeText = "Single Layer"
+            elif self.imageMode == "multi":
+                modeText = "Multi Layer"
 
-        isEXRmulti = fileType == ".exrMulti"
-        self.gb_passes.setChecked(isEXRmulti)
-        self.gb_passes.setEnabled(isEXRmulti)
-        self.lw_passes.setVisible(isEXRmulti)
-
-        if fileType in [".exr", ".exrMulti", ".png"]:
-            aovName = "RGB"
-            if useAlpha:
-                aovName = aovName + "A"
-            if isEXRmulti:
-                aovName = aovName + "-Data"
-        else:
-            aovName = "beauty"
-        self.e_aovNameAuto.setText(aovName)
-
-        self.stateManager.saveStatesToScene()
+            idx = self.cb_imageMode.findText(modeText)
+            if idx != -1:
+                self.cb_imageMode.setCurrentIndex(idx)
+        
+        self.updateUi()
 
 
     @err_catcher(name=__name__)
@@ -862,15 +837,6 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
     def onContextTypeChanged(self, state):
         self.refreshContext()
         self.stateManager.saveStatesToScene()
-
-
-    @err_catcher(name=__name__)                                     
-    def currentAOVname(self):
-        if self.chb_customAOV.isChecked():
-            return self.e_aovNameCustom.text()
-        
-        elif not self.chb_customAOV.isChecked():
-            return self.e_aovNameAuto.text()
 
 
     @err_catcher(name=__name__)
@@ -952,9 +918,9 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
             VBox.addWidget(self.expressionWinLabel)
             self.expressionWin.setLayout(VBox)
             self.expressionWin.setWindowFlags(
-                Qt.FramelessWindowHint  # hides the window controls
-                | Qt.WindowStaysOnTopHint  # forces window to top... maybe
-                | Qt.SplashScreen  # this one hides it from the task bar!
+                Qt.FramelessWindowHint          # hides the window controls
+                | Qt.WindowStaysOnTopHint       # forces window to top... maybe
+                | Qt.SplashScreen               # this one hides it from the task bar!
                 )
 
             self.expressionWin.setGeometry(0, 0, winwidth, winheight)
@@ -979,6 +945,12 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
     def setCam(self, index):
         self.curCam = self.camlist[index]
         self.stateManager.saveStatesToScene()
+
+
+    #   This Seems to be Needed as a Dummy for SM RCL List
+    @err_catcher(name=__name__)
+    def getOutputName(self, useVersion="next", identifier=None, layer=None):
+        return "RGB"
 
 
     @err_catcher(name=__name__)
@@ -1016,17 +988,6 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
 
     @err_catcher(name=__name__)
-    def setFormat(self, fmt):
-        idx = self.cb_format.findText(fmt)
-        if idx != -1:
-            self.cb_format.setCurrentIndex(idx)
-            self.stateManager.saveStatesToScene()
-            return True
-
-        return False
-
-
-    @err_catcher(name=__name__)
     def getContextType(self):
         contextType = self.cb_context.currentText()
         return contextType
@@ -1054,11 +1015,6 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         self.l_taskName.setText(taskname)
         self.setTaskWarn(not bool(taskname))
         self.updateUi()
-
-
-    @err_catcher(name=__name__)
-    def getSortKey(self):
-        return self.getTaskname()
 
 
     @err_catcher(name=__name__)
@@ -1198,35 +1154,10 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
     @err_catcher(name=__name__)                             
     def getRenderSamples(self, command, samples=None):
-        if command == "Status":
-            isChecked = self.core.appPlugin.getRenderSamples(command="Status")
-
-            return isChecked
-        
-        elif command == "Set":
-            self.core.appPlugin.getRenderSamples(command="Set", samples=samples)
-
-
-    @err_catcher(name=__name__)                             
-    def useCompositor(self, command, useComp=False):
-        if command == "Status":
-            isChecked = self.core.appPlugin.useCompositor(command="Status")
-
-            return isChecked
-        
-        elif command == "Set":
-            self.core.appPlugin.useCompositor(command="Set", useComp=useComp)
-
-
-    @err_catcher(name=__name__)                             
-    def getPersistentData (self, command, usePD=False):
-        if command == "Status":
-            isChecked = self.core.appPlugin.getPersistentData(command="Status")
-
-            return isChecked
-        
-        elif command == "Set":
-            self.core.appPlugin.getPersistentData(command="Set", usePD=usePD)
+        if command == "status":
+            return self.core.appPlugin.getRenderSamples(command="status")       
+        elif command == "set":
+            self.core.appPlugin.getRenderSamples(command="set", samples=samples)
 
 
     @err_catcher(name=__name__)                             
@@ -1462,13 +1393,14 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         return self.cb_renderLayer.currentText()
 
 
+    #   Gets Current Render Layer and Refreshes Passes of the Layer
     @err_catcher(name=__name__)
     def refreshPasses(self, index=None):
         renderlayer = self.curOverrideLayer()
-
         self.core.appPlugin.sm_render_refreshPasses(self, renderlayer)
 
 
+    #   Opens AOV Passes Popup
     @err_catcher(name=__name__)
     def showPasses(self):
         curRenderLayer = self.curOverrideLayer()
@@ -1552,11 +1484,9 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         renderLayers = self.getRenderLayers("all")
 
         if self.chb_overrideLayers.isChecked():
-
             items = self.lw_passes.selectedItems()
             for i in items:
                 self.core.appPlugin.removeAOV(i.text(), renderLayer)
-
         else:
             for layer in renderLayers:
                 items = self.lw_passes.selectedItems()
@@ -1602,6 +1532,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         return context
 
 
+    #   Simple Error Checks
     @err_catcher(name=__name__)
     def preExecuteState(self):
         warnings = []
@@ -1616,6 +1547,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
             and not self.core.appPlugin.isNodeValid(self, self.curCam)
             ):
             warnings.append(["No camera is selected.", "", 3])
+
         elif self.curCam == "Current View":
             warnings.append(["No camera is selected.", "", 2])
 
@@ -1638,40 +1570,6 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
 
     @err_catcher(name=__name__)
-    def getOutputName(self, useVersion="next"):
-        if self.tasknameRequired and not self.getTaskname():
-            return
-
-        task = self.getTaskname()
-        extension = self.cb_format.currentText()
-        context = self.getCurrentContext()
-        framePadding = ""
-
-        if "type" not in context:
-            return
-
-        singleFrame = self.cb_rangeType.currentText() == "Single Frame"
-        location = self.cb_outPath.currentText()
-        outputPathData = self.core.mediaProducts.generateMediaProductPath(
-            entity=context,
-            task=task,
-            extension=extension,
-            framePadding=framePadding,
-            comment=self.stateManager.publishComment,
-            version=useVersion if useVersion != "next" else None,
-            location=location,
-            singleFrame=singleFrame,
-            returnDetails=True,
-            mediaType=self.mediaType,
-            )
-
-        outputFolder = os.path.dirname(outputPathData["path"])
-        hVersion = outputPathData["version"]
-
-        return outputPathData["path"], outputFolder, hVersion
-
-
-    @err_catcher(name=__name__)
     def executeState(self, parent, useVersion="next"):
         rangeType = self.cb_rangeType.currentText()
         frames = self.getFrameRange(rangeType)
@@ -1690,8 +1588,9 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
             endFrame = startFrame
 
         updateMaster = True
+
         fileName = self.core.getCurrentFileName()
-        context = self.getCurrentContext()
+        rSettings = self.getCurrentContext()
         if not self.renderingStarted:
             if self.tasknameRequired and not self.getTaskname():
                 return [
@@ -1708,77 +1607,38 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
                     + ": error - no camera is selected. Skipping activation of this state."
                 ]
 
-            outputName, outputPath, hVersion = self.getOutputName(useVersion=useVersion)
+            #   Format Option Strings
+            imageFormat = f".{self.cb_format.currentText().lower()}"
+            exrBitdepth = "16" if self.cb_exrBitDepth.currentText() == "16 (Half Float)" else "32"
+            pngBitDepth =  "8" if self.cb_pngBitDepth.currentText() == "8 (Integer)" else "16"
 
-            outLength = len(outputName)
-            if platform.system() == "Windows" and os.getenv("PRISM_IGNORE_PATH_LENGTH") != "1" and outLength > 255:
-                return [
-                    self.state.text(0)
-                    + " - error - The outputpath is longer than 255 characters (%s), which is not supported on Windows. Please shorten the outputpath by changing the comment, taskname or projectpath."
-                    % outLength
-                ]
-
-            if not os.path.exists(os.path.dirname(outputPath)):
-                os.makedirs(os.path.dirname(outputPath))
-
-            details = context.copy()
-            if "filename" in details:
-                del details["filename"]
-
-            if "extension" in details:
-                del details["extension"]
-
-            details["version"] = hVersion
-            details["sourceScene"] = fileName
-            details["identifier"] = self.getTaskname()
-            details["comment"] = self.stateManager.publishComment
-
-            if self.mediaType == "3drenders":
-                infopath = os.path.dirname(outputPath)
-            else:
-                infopath = outputPath
-
-            self.core.saveVersionInfo(
-                filepath=infopath, details=details
-            )
-
-            aovName = self.currentAOVname()        
-
-            passList = []
-
-            # Iterate through each item in the QListWidget
-            for row in range(self.lw_passes.count()):
-                passItem = self.lw_passes.item(row)
-                if passItem is not None:
-                    passList.append(passItem.text())                       
-
-            self.l_pathLast.setText(outputName)
-            self.l_pathLast.setToolTip(outputName)
-            self.stateManager.saveStatesToScene()
-
-            rSettings = {
-                "aovName": aovName,                                         
-                "outputName": outputName,
+            rSettings.update({
+                "identifier": self.getTaskname(),
+                "location": self.cb_outPath.currentText(),
                 "startFrame": startFrame,
                 "endFrame": endFrame,
                 "frames": frames,
                 "rangeType": rangeType,
-                "overrideLayers": self.chb_overrideLayers.isChecked(),      
-                "renderLayer": self.cb_renderLayer.currentText(),           
-                "renderSamples": self.e_samples.text(),                     
-                "imageFormat": self.cb_format.currentText(),                
-                "exrCodec": self.cb_exrCodec.currentText(),                 
-                "exrBitDepth": self.cb_exrBitDepth.currentText(),           
-                "pngBitDepth": self.cb_pngBitDepth.currentText(),           
-                "pngCompress": self.sp_pngCompress.value(),                 
-                "jpegQual": self.sp_jpegQual.value(),                       
-                "useAlpha": self.chb_alpha.isChecked(),                     
-                "useComp": self.chb_compositor.isChecked(),                 
+                "scaling":self.cb_scaling.currentText(),
+                "overrideLayers": self.chb_overrideLayers.isChecked(),
+                "renderLayer": self.cb_renderLayer.currentText(),
+                "renderSamples": self.e_samples.text(),
+                "imageFormat": imageFormat,
+                "exrCodec": self.cb_exrCodec.currentText(),
+                "exrBitDepth": exrBitdepth,
+                "pngBitDepth": pngBitDepth,
+                "pngCompress": self.sp_pngCompress.value(),
+                "jpegQual": self.sp_jpegQual.value(),
+                "useAlpha": self.chb_alpha.isChecked(),
+                "useComp": self.chb_compositor.isChecked(),
                 "persData": self.chb_persData.isChecked(),
                 "ovrColorspace": self.chb_colorSpace.isChecked(),
                 "colorSpace": self.cb_colorSpace.currentText(),
-                "aovPasses": passList                   
-                }
+                "enablePasses": self.chb_enablePasses.isChecked(),
+                "imageMode": self.imageMode,
+                "useSepBeauty": self.chb_useSepBeauty.isChecked(),
+                "useSepCrypto": self.chb_useSepCrypto.isChecked()
+                })
 
             if (
                 self.chb_renderPreset.isChecked()
@@ -1793,7 +1653,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
                     self.core, self.renderPresets[self.cb_renderPreset.currentText()]
                     )
 
-            self.core.appPlugin.sm_render_preSubmit(self, rSettings)
+            rSettings = self.core.appPlugin.sm_render_preSubmit(self, rSettings)
 
             kwargs = {
                 "state": self,
@@ -1809,11 +1669,10 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
                         + " - error - %s" % res.get("details", "preRender hook returned False")
                         ]
 
-            if not os.path.exists(os.path.dirname(rSettings["outputName"])):
-                os.makedirs(os.path.dirname(rSettings["outputName"]))
 
             self.core.saveScene(versionUp=False, prismReq=False)
 
+            #   Execute Farm Render Job
             if not self.gb_submit.isHidden() and self.gb_submit.isChecked():
                 handleMaster = "media" if self.isUsingMasterVersion() else False
                 farmPlugin = self.core.plugins.getRenderfarmPlugin(self.cb_manager.currentText())
@@ -1827,20 +1686,17 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
                     rSettings["outputName"],
                     parent,
                     handleMaster=handleMaster,
-                    details=details,
+                    details=rSettings,
                     sceneDescription=sceneDescription
                     )
                 updateMaster = False
+
+            #   Execute Local Render
             else:
-                result = self.core.appPlugin.sm_render_startLocalRender(
-                    self, rSettings["outputName"], rSettings
-                    )
+                result = self.core.appPlugin.sm_render_startLocalRender(self, rSettings)
         else:
             rSettings = self.LastRSettings
-            result = self.core.appPlugin.sm_render_startLocalRender(
-                self, rSettings["outputName"], rSettings
-                )
-            outputName = rSettings["outputName"]
+            result = self.core.appPlugin.sm_render_startLocalRender(self, rSettings)
 
         if not self.renderingStarted:
             self.core.appPlugin.sm_render_undoRenderSettings(self, rSettings)
@@ -1850,7 +1706,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
             return [self.state.text(0) + " - publish paused"]
         else:
             if updateMaster:
-                self.handleMasterVersion(outputName)
+                self.handleMasterVersion(rSettings["outputPath"])
 
             kwargs = {
                 "state": self,
@@ -1925,13 +1781,10 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
     @err_catcher(name=__name__)
     def getStateProps(self):
-
         stateProps = {
             "stateName": self.e_name.text(),
             "contextType": self.getContextType(),
             "customContext": self.customContext,
-            "useCustomAOV": self.chb_customAOV.isChecked(),
-            "aovNameCustom": self.e_aovNameCustom.text(),
             "taskname": self.getTaskname(),
             "rezScale": str(self.cb_scaling.currentText()),                     
             "renderpresetoverride": str(self.chb_renderPreset.isChecked()),
@@ -1954,7 +1807,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
             "overrideLayers": self.chb_overrideLayers.isChecked(),              
             "renderlayer": str(self.cb_renderLayer.currentText()),
             "useComp": self.chb_compositor.isChecked(),                         
-            "persData": self.chb_persData.isChecked(),                          
+            "persData": self.chb_persData.isChecked(),
             "outputFormat": str(self.cb_format.currentText()),
             "codec": self.cb_exrCodec.currentText(),                            
             "exrBitDepth": self.cb_exrBitDepth.currentText(),                   
@@ -1964,6 +1817,10 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
             "useAlpha": self.chb_alpha.isChecked(),
             "ovrColorSpace": self.chb_colorSpace.isChecked(),
             "currColorSpace": self.cb_colorSpace.currentText(),
+            "enablePasses": self.chb_enablePasses.isChecked(),
+            "useSepBeauty": self.chb_useSepBeauty.isChecked(),
+            "useSepCrypto": self.chb_useSepCrypto.isChecked(),
+            "imageMode": self.imageMode,
             "submitrender": str(self.gb_submit.isChecked()),
             "rjmanager": str(self.cb_manager.currentText()),
             "rjprio": self.sp_rjPrio.value(),
@@ -1978,8 +1835,8 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
             "dlgpupt": self.sp_dlGPUpt.value(),
             "dlgpudevices": self.le_dlGPUdevices.text(),
             "lastexportpath": self.l_pathLast.text().replace("\\", "/"),
-            "enablepasses": str(self.gb_passes.isChecked()),
             "stateenabled": self.core.getCheckStateValue(self.state.checkState(0)),
             }
+        
         self.core.callback("onStateGetSettings", self, stateProps)
         return stateProps

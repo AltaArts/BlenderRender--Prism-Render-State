@@ -16,7 +16,7 @@ class Ui_wg_BlenderRender(object):
     def setupUi(self, wg_BlenderRender):
         if not wg_BlenderRender.objectName():
             wg_BlenderRender.setObjectName(u"wg_BlenderRender")
-        wg_BlenderRender.resize(505, 1240)
+        wg_BlenderRender.resize(505, 1330)
         self.verticalLayout = QVBoxLayout(wg_BlenderRender)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
@@ -68,41 +68,14 @@ class Ui_wg_BlenderRender(object):
         self.b_changeTask = QPushButton(self.f_taskname)
         self.b_changeTask.setObjectName(u"b_changeTask")
         self.b_changeTask.setEnabled(True)
-        self.b_changeTask.setFocusPolicy(Qt.NoFocus)
+        self.b_changeTask.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.horizontalLayout_10.addWidget(self.b_changeTask)
 
 
         self.verticalLayout_2.addWidget(self.f_taskname)
 
-        self.f_AOV = QHBoxLayout()
-        self.f_AOV.setObjectName(u"f_AOV")
-        self.f_AOV.setContentsMargins(9, -1, 9, -1)
-        self.l_AOV = QLabel(self.gb_BlenderRender)
-        self.l_AOV.setObjectName(u"l_AOV")
-
-        self.f_AOV.addWidget(self.l_AOV)
-
-        self.e_aovNameCustom = QLineEdit(self.gb_BlenderRender)
-        self.e_aovNameCustom.setObjectName(u"e_aovNameCustom")
-
-        self.f_AOV.addWidget(self.e_aovNameCustom)
-
-        self.e_aovNameAuto = QLineEdit(self.gb_BlenderRender)
-        self.e_aovNameAuto.setObjectName(u"e_aovNameAuto")
-        self.e_aovNameAuto.setReadOnly(True)
-
-        self.f_AOV.addWidget(self.e_aovNameAuto)
-
-        self.chb_customAOV = QCheckBox(self.gb_BlenderRender)
-        self.chb_customAOV.setObjectName(u"chb_customAOV")
-
-        self.f_AOV.addWidget(self.chb_customAOV)
-
-
-        self.verticalLayout_2.addLayout(self.f_AOV)
-
-        self.verticalSpacer_2 = QSpacerItem(20, 5, QSizePolicy.Minimum, QSizePolicy.Fixed)
+        self.verticalSpacer_2 = QSpacerItem(20, 5, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
 
         self.verticalLayout_2.addItem(self.verticalSpacer_2)
 
@@ -116,7 +89,7 @@ class Ui_wg_BlenderRender(object):
 
         self.horizontalLayout_11.addWidget(self.label_7)
 
-        self.horizontalSpacer_5 = QSpacerItem(37, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_5 = QSpacerItem(37, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_11.addItem(self.horizontalSpacer_5)
 
@@ -125,7 +98,7 @@ class Ui_wg_BlenderRender(object):
 
         self.horizontalLayout_11.addWidget(self.l_context)
 
-        self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_11.addItem(self.horizontalSpacer_3)
 
@@ -153,7 +126,7 @@ class Ui_wg_BlenderRender(object):
 
         self.horizontalLayout.addWidget(self.label_3)
 
-        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout.addItem(self.horizontalSpacer_2)
 
@@ -174,9 +147,9 @@ class Ui_wg_BlenderRender(object):
         self.l_rangeStart = QLabel(self.w_frameRangeValues)
         self.l_rangeStart.setObjectName(u"l_rangeStart")
         self.l_rangeStart.setMinimumSize(QSize(30, 0))
-        self.l_rangeStart.setFrameShape(QFrame.NoFrame)
-        self.l_rangeStart.setFrameShadow(QFrame.Plain)
-        self.l_rangeStart.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.l_rangeStart.setFrameShape(QFrame.Shape.NoFrame)
+        self.l_rangeStart.setFrameShadow(QFrame.Shadow.Plain)
+        self.l_rangeStart.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.gridLayout.addWidget(self.l_rangeStart, 0, 5, 1, 1)
 
@@ -188,7 +161,7 @@ class Ui_wg_BlenderRender(object):
 
         self.gridLayout.addWidget(self.sp_rangeStart, 0, 6, 1, 1)
 
-        self.horizontalSpacer_44 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_44 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.gridLayout.addItem(self.horizontalSpacer_44, 0, 13, 1, 1)
 
@@ -205,16 +178,16 @@ class Ui_wg_BlenderRender(object):
 
         self.gridLayout.addWidget(self.sp_rangeEnd, 0, 10, 1, 1)
 
-        self.horizontalSpacer_43 = QSpacerItem(80, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_43 = QSpacerItem(80, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.gridLayout.addItem(self.horizontalSpacer_43, 0, 0, 1, 1)
 
         self.l_rangeEnd = QLabel(self.w_frameRangeValues)
         self.l_rangeEnd.setObjectName(u"l_rangeEnd")
         self.l_rangeEnd.setMinimumSize(QSize(30, 0))
-        self.l_rangeEnd.setFrameShape(QFrame.NoFrame)
-        self.l_rangeEnd.setFrameShadow(QFrame.Plain)
-        self.l_rangeEnd.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.l_rangeEnd.setFrameShape(QFrame.Shape.NoFrame)
+        self.l_rangeEnd.setFrameShadow(QFrame.Shadow.Plain)
+        self.l_rangeEnd.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.gridLayout.addWidget(self.l_rangeEnd, 0, 9, 1, 1)
 
@@ -223,7 +196,7 @@ class Ui_wg_BlenderRender(object):
 
         self.gridLayout.addWidget(self.l_rangeStartInfo, 0, 1, 1, 1)
 
-        self.horizontalSpacer_13 = QSpacerItem(20, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_13 = QSpacerItem(20, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.gridLayout.addItem(self.horizontalSpacer_13, 0, 7, 1, 1)
 
@@ -235,7 +208,7 @@ class Ui_wg_BlenderRender(object):
         self.f_fml = QHBoxLayout(self.w_fml)
         self.f_fml.setObjectName(u"f_fml")
         self.f_fml.setContentsMargins(9, 0, 9, 0)
-        self.horizontalSpacer_4 = QSpacerItem(40, 20, QSizePolicy.Fixed, QSizePolicy.Minimum)
+        self.horizontalSpacer_4 = QSpacerItem(40, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
 
         self.f_fml.addItem(self.horizontalSpacer_4)
 
@@ -246,7 +219,7 @@ class Ui_wg_BlenderRender(object):
 
         self.e_fml = QLineEdit(self.w_fml)
         self.e_fml.setObjectName(u"e_fml")
-        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.e_fml.sizePolicy().hasHeightForWidth())
@@ -257,7 +230,7 @@ class Ui_wg_BlenderRender(object):
 
         self.f_fml.addWidget(self.e_fml)
 
-        self.horizontalSpacer_10 = QSpacerItem(40, 20, QSizePolicy.Fixed, QSizePolicy.Minimum)
+        self.horizontalSpacer_10 = QSpacerItem(40, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
 
         self.f_fml.addItem(self.horizontalSpacer_10)
 
@@ -275,7 +248,7 @@ class Ui_wg_BlenderRender(object):
 
         self.horizontalLayout_15.addWidget(self.l_frameExpression)
 
-        self.horizontalSpacer_14 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_14 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_15.addItem(self.horizontalSpacer_14)
 
@@ -299,7 +272,7 @@ class Ui_wg_BlenderRender(object):
 
         self.horizontalLayout_2.addWidget(self.label)
 
-        self.horizontalSpacer = QSpacerItem(60, 20, QSizePolicy.Fixed, QSizePolicy.Minimum)
+        self.horizontalSpacer = QSpacerItem(60, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_2.addItem(self.horizontalSpacer)
 
@@ -329,21 +302,21 @@ class Ui_wg_BlenderRender(object):
 
         self.horizontalLayout_38.addWidget(self.cb_scaling)
 
-        self.horizontalSpacer_39 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_39 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_38.addItem(self.horizontalSpacer_39)
 
         self.e_xRez = QLineEdit(self.f_resScaling)
         self.e_xRez.setObjectName(u"e_xRez")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         sizePolicy1.setHorizontalStretch(0)
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.e_xRez.sizePolicy().hasHeightForWidth())
         self.e_xRez.setSizePolicy(sizePolicy1)
         self.e_xRez.setMinimumSize(QSize(50, 0))
-        self.e_xRez.setFocusPolicy(Qt.NoFocus)
+        self.e_xRez.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.e_xRez.setAcceptDrops(False)
-        self.e_xRez.setAlignment(Qt.AlignCenter)
+        self.e_xRez.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.e_xRez.setReadOnly(True)
 
         self.horizontalLayout_38.addWidget(self.e_xRez)
@@ -358,9 +331,9 @@ class Ui_wg_BlenderRender(object):
         sizePolicy1.setHeightForWidth(self.e_yRez.sizePolicy().hasHeightForWidth())
         self.e_yRez.setSizePolicy(sizePolicy1)
         self.e_yRez.setMinimumSize(QSize(50, 0))
-        self.e_yRez.setFocusPolicy(Qt.NoFocus)
+        self.e_yRez.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.e_yRez.setAcceptDrops(False)
-        self.e_yRez.setAlignment(Qt.AlignCenter)
+        self.e_yRez.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.e_yRez.setReadOnly(True)
 
         self.horizontalLayout_38.addWidget(self.e_yRez)
@@ -380,7 +353,7 @@ class Ui_wg_BlenderRender(object):
 
         self.horizontalLayout_9.addWidget(self.label_4)
 
-        self.horizontalSpacer_9 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_9 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_9.addItem(self.horizontalSpacer_9)
 
@@ -412,7 +385,7 @@ class Ui_wg_BlenderRender(object):
         self.b_resPresets.setEnabled(False)
         self.b_resPresets.setMinimumSize(QSize(23, 23))
         self.b_resPresets.setMaximumSize(QSize(23, 23))
-        self.b_resPresets.setFocusPolicy(Qt.NoFocus)
+        self.b_resPresets.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.horizontalLayout_9.addWidget(self.b_resPresets)
 
@@ -429,7 +402,7 @@ class Ui_wg_BlenderRender(object):
 
         self.horizontalLayout_14.addWidget(self.l_renderPreset)
 
-        self.horizontalSpacer_7 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_7 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_14.addItem(self.horizontalSpacer_7)
 
@@ -459,7 +432,7 @@ class Ui_wg_BlenderRender(object):
 
         self.horizontalLayout_17.addWidget(self.l_outPath_2)
 
-        self.horizontalSpacer_28 = QSpacerItem(113, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_28 = QSpacerItem(113, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_17.addItem(self.horizontalSpacer_28)
 
@@ -491,7 +464,7 @@ class Ui_wg_BlenderRender(object):
 
         self.horizontalLayout_16.addWidget(self.e_samples)
 
-        self.horizontalSpacer_27 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_27 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_16.addItem(self.horizontalSpacer_27)
 
@@ -537,197 +510,94 @@ class Ui_wg_BlenderRender(object):
 
         self.verticalLayout_2.addWidget(self.f_renderLayer)
 
-        self.verticalSpacer = QSpacerItem(20, 10, QSizePolicy.Minimum, QSizePolicy.Fixed)
-
-        self.verticalLayout_2.addItem(self.verticalSpacer)
-
-        self.f_midPanelUpr = QHBoxLayout()
-        self.f_midPanelUpr.setObjectName(u"f_midPanelUpr")
-        self.f_midPanelUpr.setContentsMargins(9, -1, -1, -1)
-        self.f_midUprLt = QVBoxLayout()
-        self.f_midUprLt.setObjectName(u"f_midUprLt")
-        self.f_midUprLt.setContentsMargins(-1, -1, 30, -1)
-        self.f_midUprLt_2 = QHBoxLayout()
-        self.f_midUprLt_2.setObjectName(u"f_midUprLt_2")
-        self.l_format = QLabel(self.gb_BlenderRender)
-        self.l_format.setObjectName(u"l_format")
-
-        self.f_midUprLt_2.addWidget(self.l_format)
-
-        self.cb_format = QComboBox(self.gb_BlenderRender)
+        self.gb_outputOptions = QGroupBox(self.gb_BlenderRender)
+        self.gb_outputOptions.setObjectName(u"gb_outputOptions")
+        self.verticalLayout_4 = QVBoxLayout(self.gb_outputOptions)
+        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
+        self.lo_formatting = QHBoxLayout()
+        self.lo_formatting.setObjectName(u"lo_formatting")
+        self.cb_format = QComboBox(self.gb_outputOptions)
         self.cb_format.setObjectName(u"cb_format")
         self.cb_format.setMinimumSize(QSize(50, 0))
 
-        self.f_midUprLt_2.addWidget(self.cb_format)
+        self.lo_formatting.addWidget(self.cb_format)
 
-
-        self.f_midUprLt.addLayout(self.f_midUprLt_2)
-
-
-        self.f_midPanelUpr.addLayout(self.f_midUprLt)
-
-        self.f_midUprRt = QVBoxLayout()
-        self.f_midUprRt.setObjectName(u"f_midUprRt")
-        self.f_midUprRt_2 = QHBoxLayout()
-        self.f_midUprRt_2.setObjectName(u"f_midUprRt_2")
-        self.chb_compositor = QCheckBox(self.gb_BlenderRender)
-        self.chb_compositor.setObjectName(u"chb_compositor")
-        self.chb_compositor.setLayoutDirection(Qt.RightToLeft)
-
-        self.f_midUprRt_2.addWidget(self.chb_compositor)
-
-        self.horizontalSpacer_41 = QSpacerItem(40, 20, QSizePolicy.Fixed, QSizePolicy.Minimum)
-
-        self.f_midUprRt_2.addItem(self.horizontalSpacer_41)
-
-
-        self.f_midUprRt.addLayout(self.f_midUprRt_2)
-
-
-        self.f_midPanelUpr.addLayout(self.f_midUprRt)
-
-
-        self.verticalLayout_2.addLayout(self.f_midPanelUpr)
-
-        self.f_midPanelMid = QHBoxLayout()
-        self.f_midPanelMid.setObjectName(u"f_midPanelMid")
-        self.f_midPanelMid.setContentsMargins(9, -1, -1, -1)
-        self.f_midMidLt = QVBoxLayout()
-        self.f_midMidLt.setObjectName(u"f_midMidLt")
-        self.f_midMidLt_2 = QHBoxLayout()
-        self.f_midMidLt_2.setObjectName(u"f_midMidLt_2")
-        self.f_midMidLt_2.setContentsMargins(-1, -1, 30, -1)
-        self.l_fileCompress = QLabel(self.gb_BlenderRender)
-        self.l_fileCompress.setObjectName(u"l_fileCompress")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
-        sizePolicy2.setHorizontalStretch(0)
-        sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.l_fileCompress.sizePolicy().hasHeightForWidth())
-        self.l_fileCompress.setSizePolicy(sizePolicy2)
-        self.l_fileCompress.setMinimumSize(QSize(40, 0))
-
-        self.f_midMidLt_2.addWidget(self.l_fileCompress)
-
-        self.cb_exrCodec = QComboBox(self.gb_BlenderRender)
+        self.cb_exrCodec = QComboBox(self.gb_outputOptions)
         self.cb_exrCodec.setObjectName(u"cb_exrCodec")
         self.cb_exrCodec.setMinimumSize(QSize(50, 0))
 
-        self.f_midMidLt_2.addWidget(self.cb_exrCodec)
+        self.lo_formatting.addWidget(self.cb_exrCodec)
 
-        self.sp_pngCompress = QSpinBox(self.gb_BlenderRender)
+        self.sp_pngCompress = QSpinBox(self.gb_outputOptions)
         self.sp_pngCompress.setObjectName(u"sp_pngCompress")
         self.sp_pngCompress.setMaximum(100)
         self.sp_pngCompress.setSingleStep(10)
         self.sp_pngCompress.setValue(50)
 
-        self.f_midMidLt_2.addWidget(self.sp_pngCompress)
+        self.lo_formatting.addWidget(self.sp_pngCompress)
 
-        self.sp_jpegQual = QSpinBox(self.gb_BlenderRender)
+        self.sp_jpegQual = QSpinBox(self.gb_outputOptions)
         self.sp_jpegQual.setObjectName(u"sp_jpegQual")
         self.sp_jpegQual.setMaximum(100)
         self.sp_jpegQual.setSingleStep(10)
         self.sp_jpegQual.setValue(50)
 
-        self.f_midMidLt_2.addWidget(self.sp_jpegQual)
+        self.lo_formatting.addWidget(self.sp_jpegQual)
+
+        self.cb_exrBitDepth = QComboBox(self.gb_outputOptions)
+        self.cb_exrBitDepth.setObjectName(u"cb_exrBitDepth")
+        self.cb_exrBitDepth.setMinimumSize(QSize(50, 0))
+
+        self.lo_formatting.addWidget(self.cb_exrBitDepth)
+
+        self.cb_pngBitDepth = QComboBox(self.gb_outputOptions)
+        self.cb_pngBitDepth.setObjectName(u"cb_pngBitDepth")
+        self.cb_pngBitDepth.setMinimumSize(QSize(50, 0))
+
+        self.lo_formatting.addWidget(self.cb_pngBitDepth)
 
 
-        self.f_midMidLt.addLayout(self.f_midMidLt_2)
-
-
-        self.f_midPanelMid.addLayout(self.f_midMidLt)
-
-        self.f_midMidRt = QVBoxLayout()
-        self.f_midMidRt.setObjectName(u"f_midMidRt")
-        self.f_midMidRt_2 = QHBoxLayout()
-        self.f_midMidRt_2.setObjectName(u"f_midMidRt_2")
-        self.chb_persData = QCheckBox(self.gb_BlenderRender)
-        self.chb_persData.setObjectName(u"chb_persData")
-        self.chb_persData.setLayoutDirection(Qt.RightToLeft)
-
-        self.f_midMidRt_2.addWidget(self.chb_persData)
-
-        self.horizontalSpacer_15 = QSpacerItem(40, 20, QSizePolicy.Fixed, QSizePolicy.Minimum)
-
-        self.f_midMidRt_2.addItem(self.horizontalSpacer_15)
-
-
-        self.f_midMidRt.addLayout(self.f_midMidRt_2)
-
-
-        self.f_midPanelMid.addLayout(self.f_midMidRt)
-
-
-        self.verticalLayout_2.addLayout(self.f_midPanelMid)
+        self.verticalLayout_4.addLayout(self.lo_formatting)
 
         self.f_midPanelLwr = QHBoxLayout()
         self.f_midPanelLwr.setObjectName(u"f_midPanelLwr")
         self.f_midPanelLwr.setContentsMargins(9, -1, -1, -1)
-        self.f_midLwrLt = QVBoxLayout()
-        self.f_midLwrLt.setObjectName(u"f_midLwrLt")
-        self.f_midLwrLt_2 = QHBoxLayout()
-        self.f_midLwrLt_2.setObjectName(u"f_midLwrLt_2")
-        self.f_midLwrLt_2.setContentsMargins(-1, -1, 30, -1)
-        self.l_bitDepth = QLabel(self.gb_BlenderRender)
-        self.l_bitDepth.setObjectName(u"l_bitDepth")
+        self.chb_compositor = QCheckBox(self.gb_outputOptions)
+        self.chb_compositor.setObjectName(u"chb_compositor")
+        self.chb_compositor.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
 
-        self.f_midLwrLt_2.addWidget(self.l_bitDepth)
+        self.f_midPanelLwr.addWidget(self.chb_compositor)
 
-        self.cb_exrBitDepth = QComboBox(self.gb_BlenderRender)
-        self.cb_exrBitDepth.setObjectName(u"cb_exrBitDepth")
-        self.cb_exrBitDepth.setMinimumSize(QSize(50, 0))
-
-        self.f_midLwrLt_2.addWidget(self.cb_exrBitDepth)
-
-        self.cb_pngBitDepth = QComboBox(self.gb_BlenderRender)
-        self.cb_pngBitDepth.setObjectName(u"cb_pngBitDepth")
-        self.cb_pngBitDepth.setMinimumSize(QSize(50, 0))
-
-        self.f_midLwrLt_2.addWidget(self.cb_pngBitDepth)
-
-
-        self.f_midLwrLt.addLayout(self.f_midLwrLt_2)
-
-
-        self.f_midPanelLwr.addLayout(self.f_midLwrLt)
-
-        self.f_midLwrRt = QVBoxLayout()
-        self.f_midLwrRt.setObjectName(u"f_midLwrRt")
-        self.f_midLwrRt_2 = QHBoxLayout()
-        self.f_midLwrRt_2.setObjectName(u"f_midLwrRt_2")
-        self.chb_alpha = QCheckBox(self.gb_BlenderRender)
+        self.chb_alpha = QCheckBox(self.gb_outputOptions)
         self.chb_alpha.setObjectName(u"chb_alpha")
-        self.chb_alpha.setLayoutDirection(Qt.RightToLeft)
+        self.chb_alpha.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
 
-        self.f_midLwrRt_2.addWidget(self.chb_alpha)
+        self.f_midPanelLwr.addWidget(self.chb_alpha)
 
-        self.horizontalSpacer_8 = QSpacerItem(40, 20, QSizePolicy.Fixed, QSizePolicy.Minimum)
+        self.chb_persData = QCheckBox(self.gb_outputOptions)
+        self.chb_persData.setObjectName(u"chb_persData")
+        self.chb_persData.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
 
-        self.f_midLwrRt_2.addItem(self.horizontalSpacer_8)
-
-
-        self.f_midLwrRt.addLayout(self.f_midLwrRt_2)
-
-
-        self.f_midPanelLwr.addLayout(self.f_midLwrRt)
+        self.f_midPanelLwr.addWidget(self.chb_persData)
 
 
-        self.verticalLayout_2.addLayout(self.f_midPanelLwr)
+        self.verticalLayout_4.addLayout(self.f_midPanelLwr)
 
         self.f_colorSpace = QHBoxLayout()
         self.f_colorSpace.setObjectName(u"f_colorSpace")
         self.f_colorSpace.setContentsMargins(9, -1, 9, -1)
-        self.l_colorSpace = QLabel(self.gb_BlenderRender)
+        self.l_colorSpace = QLabel(self.gb_outputOptions)
         self.l_colorSpace.setObjectName(u"l_colorSpace")
 
         self.f_colorSpace.addWidget(self.l_colorSpace)
 
-        self.chb_colorSpace = QCheckBox(self.gb_BlenderRender)
+        self.chb_colorSpace = QCheckBox(self.gb_outputOptions)
         self.chb_colorSpace.setObjectName(u"chb_colorSpace")
-        self.chb_colorSpace.setLayoutDirection(Qt.LeftToRight)
+        self.chb_colorSpace.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
 
         self.f_colorSpace.addWidget(self.chb_colorSpace)
 
-        self.cb_colorSpace = QComboBox(self.gb_BlenderRender)
+        self.cb_colorSpace = QComboBox(self.gb_outputOptions)
         self.cb_colorSpace.setObjectName(u"cb_colorSpace")
         sizePolicy.setHeightForWidth(self.cb_colorSpace.sizePolicy().hasHeightForWidth())
         self.cb_colorSpace.setSizePolicy(sizePolicy)
@@ -735,7 +605,61 @@ class Ui_wg_BlenderRender(object):
         self.f_colorSpace.addWidget(self.cb_colorSpace)
 
 
-        self.verticalLayout_2.addLayout(self.f_colorSpace)
+        self.verticalLayout_4.addLayout(self.f_colorSpace)
+
+        self.verticalSpacer = QSpacerItem(20, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+
+        self.verticalLayout_4.addItem(self.verticalSpacer)
+
+
+        self.verticalLayout_2.addWidget(self.gb_outputOptions)
+
+        self.lo_passes_options = QVBoxLayout()
+        self.lo_passes_options.setObjectName(u"lo_passes_options")
+        self.lo_passes_enable = QHBoxLayout()
+        self.lo_passes_enable.setObjectName(u"lo_passes_enable")
+        self.chb_enablePasses = QCheckBox(self.gb_BlenderRender)
+        self.chb_enablePasses.setObjectName(u"chb_enablePasses")
+
+        self.lo_passes_enable.addWidget(self.chb_enablePasses)
+
+        self.cb_imageMode = QComboBox(self.gb_BlenderRender)
+        self.cb_imageMode.setObjectName(u"cb_imageMode")
+
+        self.lo_passes_enable.addWidget(self.cb_imageMode)
+
+
+        self.lo_passes_options.addLayout(self.lo_passes_enable)
+
+        self.horizontalLayout_3 = QHBoxLayout()
+        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
+        self.horizontalSpacer_6 = QSpacerItem(40, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_3.addItem(self.horizontalSpacer_6)
+
+        self.chb_useSepBeauty = QCheckBox(self.gb_BlenderRender)
+        self.chb_useSepBeauty.setObjectName(u"chb_useSepBeauty")
+
+        self.horizontalLayout_3.addWidget(self.chb_useSepBeauty)
+
+        self.horizontalSpacer_11 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_3.addItem(self.horizontalSpacer_11)
+
+        self.chb_useSepCrypto = QCheckBox(self.gb_BlenderRender)
+        self.chb_useSepCrypto.setObjectName(u"chb_useSepCrypto")
+
+        self.horizontalLayout_3.addWidget(self.chb_useSepCrypto)
+
+        self.horizontalSpacer_12 = QSpacerItem(40, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_3.addItem(self.horizontalSpacer_12)
+
+
+        self.lo_passes_options.addLayout(self.horizontalLayout_3)
+
+
+        self.verticalLayout_2.addLayout(self.lo_passes_options)
 
         self.gb_passes = QGroupBox(self.gb_BlenderRender)
         self.gb_passes.setObjectName(u"gb_passes")
@@ -747,14 +671,14 @@ class Ui_wg_BlenderRender(object):
         self.lw_passes = QListWidget(self.gb_passes)
         self.lw_passes.setObjectName(u"lw_passes")
         self.lw_passes.setMaximumSize(QSize(16777215, 500))
-        self.lw_passes.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.lw_passes.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.lw_passes.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.lw_passes.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
 
         self.verticalLayout_5.addWidget(self.lw_passes)
 
         self.b_addPasses = QPushButton(self.gb_passes)
         self.b_addPasses.setObjectName(u"b_addPasses")
-        self.b_addPasses.setFocusPolicy(Qt.NoFocus)
+        self.b_addPasses.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.verticalLayout_5.addWidget(self.b_addPasses)
 
@@ -781,7 +705,7 @@ class Ui_wg_BlenderRender(object):
 
         self.horizontalLayout_13.addWidget(self.l_manager)
 
-        self.horizontalSpacer_19 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_19 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_13.addItem(self.horizontalSpacer_19)
 
@@ -804,7 +728,7 @@ class Ui_wg_BlenderRender(object):
 
         self.horizontalLayout_26.addWidget(self.label_18)
 
-        self.horizontalSpacer_20 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_20 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_26.addItem(self.horizontalSpacer_20)
 
@@ -827,7 +751,7 @@ class Ui_wg_BlenderRender(object):
 
         self.horizontalLayout_27.addWidget(self.label_19)
 
-        self.horizontalSpacer_22 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_22 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_27.addItem(self.horizontalSpacer_22)
 
@@ -850,7 +774,7 @@ class Ui_wg_BlenderRender(object):
 
         self.horizontalLayout_23.addWidget(self.label_16)
 
-        self.horizontalSpacer_18 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_18 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_23.addItem(self.horizontalSpacer_18)
 
@@ -873,7 +797,7 @@ class Ui_wg_BlenderRender(object):
 
         self.horizontalLayout_24.addWidget(self.label_17)
 
-        self.horizontalSpacer_21 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_21 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_24.addItem(self.horizontalSpacer_21)
 
@@ -896,7 +820,7 @@ class Ui_wg_BlenderRender(object):
 
         self.horizontalLayout_21.addWidget(self.l_rjPrio)
 
-        self.horizontalSpacer_16 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_16 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_21.addItem(self.horizontalSpacer_16)
 
@@ -920,7 +844,7 @@ class Ui_wg_BlenderRender(object):
 
         self.horizontalLayout_22.addWidget(self.label_15)
 
-        self.horizontalSpacer_17 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_17 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_22.addItem(self.horizontalSpacer_17)
 
@@ -944,7 +868,7 @@ class Ui_wg_BlenderRender(object):
 
         self.horizontalLayout_28.addWidget(self.l_rjTimeout)
 
-        self.horizontalSpacer_23 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_23 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_28.addItem(self.horizontalSpacer_23)
 
@@ -972,7 +896,7 @@ class Ui_wg_BlenderRender(object):
         self.b_osSlaves = QPushButton(self.gb_osSlaves)
         self.b_osSlaves.setObjectName(u"b_osSlaves")
         self.b_osSlaves.setMaximumSize(QSize(25, 16777215))
-        self.b_osSlaves.setFocusPolicy(Qt.NoFocus)
+        self.b_osSlaves.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.horizontalLayout_25.addWidget(self.b_osSlaves)
 
@@ -989,7 +913,7 @@ class Ui_wg_BlenderRender(object):
 
         self.horizontalLayout_29.addWidget(self.l_dlConcurrentTasks)
 
-        self.horizontalSpacer_24 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_24 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_29.addItem(self.horizontalSpacer_24)
 
@@ -1014,7 +938,7 @@ class Ui_wg_BlenderRender(object):
 
         self.horizontalLayout_30.addWidget(self.l_dlGPUpt)
 
-        self.horizontalSpacer_25 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_25 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_30.addItem(self.horizontalSpacer_25)
 
@@ -1039,7 +963,7 @@ class Ui_wg_BlenderRender(object):
 
         self.horizontalLayout_31.addWidget(self.l_dlGPUdevices)
 
-        self.horizontalSpacer_26 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_26 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_31.addItem(self.horizontalSpacer_26)
 
@@ -1082,7 +1006,7 @@ class Ui_wg_BlenderRender(object):
         self.b_pathLast = QToolButton(self.gb_previous)
         self.b_pathLast.setObjectName(u"b_pathLast")
         self.b_pathLast.setEnabled(True)
-        self.b_pathLast.setArrowType(Qt.DownArrow)
+        self.b_pathLast.setArrowType(Qt.ArrowType.DownArrow)
 
         self.horizontalLayout_18.addWidget(self.b_pathLast)
 
@@ -1136,8 +1060,6 @@ class Ui_wg_BlenderRender(object):
         self.gb_BlenderRender.setTitle(QCoreApplication.translate("wg_BlenderRender", u"General", None))
         self.label_2.setText(QCoreApplication.translate("wg_BlenderRender", u"Identifier:       ", None))
         self.b_changeTask.setText(QCoreApplication.translate("wg_BlenderRender", u"change", None))
-        self.l_AOV.setText(QCoreApplication.translate("wg_BlenderRender", u"AOV Name:     ", None))
-        self.chb_customAOV.setText(QCoreApplication.translate("wg_BlenderRender", u"Custom", None))
         self.label_7.setText(QCoreApplication.translate("wg_BlenderRender", u"Context:", None))
         self.l_context.setText("")
         self.b_context.setText(QCoreApplication.translate("wg_BlenderRender", u"Select", None))
@@ -1161,14 +1083,15 @@ class Ui_wg_BlenderRender(object):
         self.l_outPath.setText(QCoreApplication.translate("wg_BlenderRender", u"Location:  ", None))
         self.label_5.setText(QCoreApplication.translate("wg_BlenderRender", u"Render Layer:    ", None))
         self.chb_overrideLayers.setText(QCoreApplication.translate("wg_BlenderRender", u"override", None))
-        self.l_format.setText(QCoreApplication.translate("wg_BlenderRender", u"Format:  ", None))
+        self.gb_outputOptions.setTitle(QCoreApplication.translate("wg_BlenderRender", u"Output Options", None))
         self.chb_compositor.setText(QCoreApplication.translate("wg_BlenderRender", u"Compositor:  ", None))
-        self.l_fileCompress.setText(QCoreApplication.translate("wg_BlenderRender", u"Codec:     ", None))
-        self.chb_persData.setText(QCoreApplication.translate("wg_BlenderRender", u"Persistent Data:", None))
-        self.l_bitDepth.setText(QCoreApplication.translate("wg_BlenderRender", u"Bit Depth:  ", None))
         self.chb_alpha.setText(QCoreApplication.translate("wg_BlenderRender", u"Alpha:  ", None))
+        self.chb_persData.setText(QCoreApplication.translate("wg_BlenderRender", u"Persistent Data:", None))
         self.l_colorSpace.setText(QCoreApplication.translate("wg_BlenderRender", u"Color Space:      ", None))
         self.chb_colorSpace.setText(QCoreApplication.translate("wg_BlenderRender", u"override", None))
+        self.chb_enablePasses.setText(QCoreApplication.translate("wg_BlenderRender", u"Enable Render Passes (AOVs)", None))
+        self.chb_useSepBeauty.setText(QCoreApplication.translate("wg_BlenderRender", u"Separate Beauty", None))
+        self.chb_useSepCrypto.setText(QCoreApplication.translate("wg_BlenderRender", u"Separate Crypto", None))
         self.gb_passes.setTitle(QCoreApplication.translate("wg_BlenderRender", u"Render Passes", None))
         self.b_addPasses.setText(QCoreApplication.translate("wg_BlenderRender", u"Add Passes", None))
         self.gb_submit.setTitle(QCoreApplication.translate("wg_BlenderRender", u"Submit to Render Farm", None))
@@ -1194,5 +1117,4 @@ class Ui_wg_BlenderRender(object):
         self.l_pathLast.setText(QCoreApplication.translate("wg_BlenderRender", u"None", None))
         self.b_pathLast.setText(QCoreApplication.translate("wg_BlenderRender", u"...", None))
     # retranslateUi
-
 
