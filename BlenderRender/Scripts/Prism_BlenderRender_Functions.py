@@ -320,18 +320,19 @@ class Prism_BlenderRender_Functions(object):
         #   Get currently selected view layer
         try:
             curlayer = bpy.context.scene.view_layers[renderLayer]
+
         #   Handles the issue with a renamed view-layer
         except KeyError:
             curlayer = bpy.context.window_manager.windows[0].view_layer
 
         aovParms = [x for x in dir(curlayer) if x.startswith("use_pass_")]
-        aovParms += [
-            "cycles." + x for x in dir(curlayer.cycles) if x.startswith("use_pass_")
-        ]
+        aovParms += ["cycles." + x for x in dir(curlayer.cycles) if x.startswith("use_pass_")]
+        
         aovs = [
             {"name": "Denoising Data", "parm": "cycles.denoising_store_passes"},
             {"name": "Render Time", "parm": "cycles.pass_debug_render_time"},
         ]
+
         nameOverrides = {
             "Emit": "Emission",
         }
@@ -915,7 +916,7 @@ class Prism_BlenderRender_Functions(object):
 
             #   If overrideLayers is checked, will set the layers
             if overrideLayers:
-                singleLayer = rSettings["renderLayer"] 
+                singleLayer = renderLayer
                 disabledLayers = set()
                 tempLayers = {}
 
@@ -1370,6 +1371,10 @@ class Prism_BlenderRender_Functions(object):
             location=(0, 0)
         )
 
+        #   Set Override Layer if Required
+        if rSettings["overrideLayers"]:
+            rLayers.layer = rSettings["renderLayer"]
+
         self.passPathDict = {}
 
         #   Get Active AOV Pass Names
@@ -1484,6 +1489,10 @@ class Prism_BlenderRender_Functions(object):
             nodeName="PRISM Render Layers",
             location=(0, 0)
         )
+
+        #   Set Override Layer if Required
+        if rSettings["overrideLayers"]:
+            rLayers.layer = rSettings["renderLayer"]
 
         #   Get AOV Data
         aovData = self.getOutputPathData(aovName, rSettings)
@@ -1732,9 +1741,7 @@ class Prism_BlenderRender_Functions(object):
         if rlayers_node is None:
             return []
 
-        passes = [sock.name for sock in rlayers_node.outputs if sock.enabled]
-
-        return passes
+        return [sock.name for sock in rlayers_node.outputs if sock.enabled]
 
 
     #   Connects Two Node's Sockets by Either Name or Object

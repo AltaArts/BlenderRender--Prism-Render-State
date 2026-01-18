@@ -507,6 +507,19 @@ class Ui_wg_BlenderRender(object):
 
         self.horizontalLayout_5.addWidget(self.cb_renderLayer)
 
+        self.b_refreshLayers = QPushButton(self.f_renderLayer)
+        self.b_refreshLayers.setObjectName(u"b_refreshLayers")
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.b_refreshLayers.sizePolicy().hasHeightForWidth())
+        self.b_refreshLayers.setSizePolicy(sizePolicy2)
+        self.b_refreshLayers.setMinimumSize(QSize(30, 0))
+        self.b_refreshLayers.setMaximumSize(QSize(30, 16777215))
+        self.b_refreshLayers.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+        self.horizontalLayout_5.addWidget(self.b_refreshLayers)
+
 
         self.verticalLayout_2.addWidget(self.f_renderLayer)
 
@@ -1083,6 +1096,7 @@ class Ui_wg_BlenderRender(object):
         self.l_outPath.setText(QCoreApplication.translate("wg_BlenderRender", u"Location:  ", None))
         self.label_5.setText(QCoreApplication.translate("wg_BlenderRender", u"Render Layer:    ", None))
         self.chb_overrideLayers.setText(QCoreApplication.translate("wg_BlenderRender", u"override", None))
+        self.b_refreshLayers.setText("")
         self.gb_outputOptions.setTitle(QCoreApplication.translate("wg_BlenderRender", u"Output Options", None))
         self.chb_compositor.setText(QCoreApplication.translate("wg_BlenderRender", u"Compositor:  ", None))
         self.chb_alpha.setText(QCoreApplication.translate("wg_BlenderRender", u"Alpha:  ", None))
@@ -1117,4 +1131,5 @@ class Ui_wg_BlenderRender(object):
         self.l_pathLast.setText(QCoreApplication.translate("wg_BlenderRender", u"None", None))
         self.b_pathLast.setText(QCoreApplication.translate("wg_BlenderRender", u"...", None))
     # retranslateUi
+
 

@@ -169,6 +169,10 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         if self.cb_manager.count() == 0:
             self.gb_submit.setVisible(False)
 
+        iconPath = os.path.join(self.core.prismRoot, "Scripts", "UserInterfacesPrism", "refresh.png")
+        icon = self.core.media.getColoredIcon(iconPath)
+        self.b_refreshLayers.setIcon(icon)
+
         self.getRenderLayers("load")
         self.getColorSpaces("load")
 
@@ -221,6 +225,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         self.e_samples.textChanged.connect(self.stateManager.saveStatesToScene)
         self.cb_outPath.activated[int].connect(self.stateManager.saveStatesToScene)
         self.chb_overrideLayers.toggled.connect(self.updateUi)
+        self.b_refreshLayers.clicked.connect(lambda: self.getRenderLayers("load"))
         self.cb_renderLayer.currentIndexChanged.connect(self.updateUi)
         self.chb_compositor.toggled.connect(self.stateManager.saveStatesToScene)            
         self.chb_persData.toggled.connect(self.stateManager.saveStatesToScene)
@@ -1199,6 +1204,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         elif command == "all":
             return renderLayers
         elif command == "load":
+            self.cb_renderLayer.clear()
             self.cb_renderLayer.addItems(renderLayers)
 
 
@@ -1539,9 +1545,12 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
         self.updateUi()
 
+
+        #   Task Name
         if self.tasknameRequired and not self.getTaskname():
             warnings.append(["No identifier is given.", "", 3])
 
+        #   Camera Missing
         if self.curCam is None or (
             self.curCam != "Current View"
             and not self.core.appPlugin.isNodeValid(self, self.curCam)
@@ -1551,6 +1560,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         elif self.curCam == "Current View":
             warnings.append(["No camera is selected.", "", 2])
 
+        #   Frame Range
         rangeType = self.cb_rangeType.currentText()
         frames = self.getFrameRange(rangeType)
 
@@ -1560,6 +1570,13 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         if frames is None or frames == []:
             warnings.append(["Framerange is invalid.", "", 3])
 
+        #   Passes
+        if self.chb_enablePasses.isChecked():
+            if self.lw_passes.count() == 0:
+                warnStr = ("No AOV Passes are Selected. Please either De-select 'Enable Passes' or add passes to Selection.")
+                warnings.append([warnStr, "", 3])
+
+        #   Farm Submission Sanity Check
         if not self.gb_submit.isHidden() and self.gb_submit.isChecked():
             plugin = self.core.plugins.getRenderfarmPlugin(self.cb_manager.currentText())
             warnings += plugin.sm_render_preExecute(self)
