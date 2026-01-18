@@ -368,7 +368,7 @@ class Prism_BlenderRender_Functions(object):
         
         aovs = [
             {"name": "Denoising Data", "parm": "cycles.denoising_store_passes"},
-            {"name": "Render Time", "parm": "cycles.pass_debug_render_time"},
+            {"name": "Render Time", "parm": "cycles.pass_debug_sample_count"},
         ]
 
         nameOverrides = {
@@ -1244,25 +1244,30 @@ class Prism_BlenderRender_Functions(object):
 
                 "Volume Direct": "VolDir",
                 "Volume Indirect": "VolIndir",
+                "Volume Scatter": "VolScatter",
+                "Volume Transmit": "VolTrans",
+                "Volume Majorant": "VolMajorant",
 
                 "Emission": "Emit",
-                "Environment": "Env",
 
+                "Environment": "Env",
                 "Ambient Occlusion": "AO",
                 "Normal": "Norm",
                 "Position": "Position",
                 "Depth": "Z",
                 "Vector": "Vec",
                 "UV": "UV",
+                "Debug Sample Count": "RenderTime",
 
                 "Mist": "Mist",
-                "IndexOB": "ObjID",
-                "IndexMA": "MatID",
+                "Object Index": "ObjID",
+                "Material Index": "MatID",
 
                 "Shadow Catcher": "Shadow",
                 "Shadow Catcher Matte": "ShadowMatte",
 
                 "Albedo": "Albedo",
+                "Grease Pencil": "Grease",
 
                 "Noisy Image": "Noisy",
                 "Denoising Normal": "DenoiseNorm",
