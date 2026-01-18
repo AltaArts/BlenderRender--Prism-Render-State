@@ -130,6 +130,7 @@ class Prism_BlenderRender_Functions(object):
             }
 
         self.core.registerCallback("onStateManagerOpen", self.onStateManagerOpen, plugin=self)
+        self.core.registerCallback("onStateManagerShow", self.onStateManagerShow, plugin=self)
         self.core.registerCallback("pluginLoaded", self.onPluginLoaded, plugin=self)
         self.core.registerCallback("userSettings_loadUI", self.userSettings_loadUI, plugin=self)
         self.core.registerCallback("onUserSettingsSave", self.onUserSettingsSave, plugin=self)
@@ -231,6 +232,43 @@ class Prism_BlenderRender_Functions(object):
                 logger.debug("Removed default ImageRender state")
             except Exception as e:
                 logger.warning(f"Unable to remove ImageRender state:\n{e}")
+
+
+    #   Called When the StateManager Opens in Blender
+    @err_catcher(name=__name__)
+    def onStateManagerShow(self, origin):
+        self.smUI = origin
+
+        ##	Resizes the StateManager Window
+        # 	Check if SM has a resize method and resize it
+        if hasattr(self.smUI, 'resize'):
+            try:
+                self.smUI.resize(900, self.smUI.size().height())
+                self.smUI.resize(900, self.smUI.size().width())
+            except:
+                pass
+
+        ##	Resize Main Vert Splitter
+        #	Check if SM has a splitter resize method
+        if hasattr(self.smUI, 'splitter') and hasattr(self.smUI.splitter, 'setSizes'):
+            try:
+                # Splitter position
+                splitterPos = 350
+
+                # 	Calculate the sizes for the splitter
+                height = self.smUI.splitter.size().height()
+                LeftSize = splitterPos
+                RightSize = height - splitterPos
+
+                # 	Set the sizes of the splitter areas
+                self.smUI.splitter.setSizes([LeftSize, RightSize])
+            except:
+                pass
+                
+        try:
+            self.popup.close()
+        except:
+            pass
 
 
     #   Called When Prism User Settings is Opened

@@ -688,6 +688,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         self.cb_colorSpace.setToolTip(tip)
 
         passesEnabled = self.chb_enablePasses.isChecked()
+        self.w_formatOptions.setVisible(not passesEnabled)
         self.gb_passes.setChecked(passesEnabled)
         self.gb_passes.setEnabled(passesEnabled)
         self.gb_passes.setVisible(passesEnabled)
@@ -707,9 +708,8 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
     @err_catcher(name=__name__)
     def setupFormatOptions(self, index=None, mode=None, loadOptions=None):
         for widget in [
-            self.cb_exrBitDepth, self.cb_pngBitDepth,
-            self.cb_exrCodec, self.sp_pngCompress, self.sp_jpegQual, self.chb_alpha,
-            self.l_colorSpace, self.chb_colorSpace, self.cb_colorSpace
+            self.f_exrBitDepth, self.f_pngBitDepth, self.f_exrCodec, self.f_pngCompress, self.f_jpegQual,
+            self.chb_alpha, self.l_colorSpace, self.chb_colorSpace, self.cb_colorSpace
             ]:
             widget.hide()
 
@@ -737,18 +737,14 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
         currentFormat = self.cb_format.currentText()
         options = self.formatOptions.get(currentFormat, {})
 
-        # self.l_fileCompress.setText(options.get("compressLabel", ""))             #   TODO DEAL WITH UI LABELS
-
         if "bitDepths" in options:
-            # self.l_bitDepth.show()
-
             if currentFormat == "EXR":
-                self.cb_exrBitDepth.show()
+                self.f_exrBitDepth.show()
             elif currentFormat == "PNG":
-                self.cb_pngBitDepth.show()
+                self.f_pngBitDepth.show()
 
         if "codec" in options:
-            self.cb_exrCodec.show()
+            self.f_exrCodec.show()
 
         if "compressWidget" in options:
             compressWidget = getattr(self, options["compressWidget"])
@@ -756,6 +752,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
         if "alpha" in options and options["alpha"]:
             self.chb_alpha.show()
+            
         if "colorSpace" in options and options["colorSpace"]:
             self.l_colorSpace.show()
             self.chb_colorSpace.show()

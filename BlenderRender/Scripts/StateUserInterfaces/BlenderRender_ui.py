@@ -16,7 +16,7 @@ class Ui_wg_BlenderRender(object):
     def setupUi(self, wg_BlenderRender):
         if not wg_BlenderRender.objectName():
             wg_BlenderRender.setObjectName(u"wg_BlenderRender")
-        wg_BlenderRender.resize(505, 1330)
+        wg_BlenderRender.resize(1124, 1330)
         self.verticalLayout = QVBoxLayout(wg_BlenderRender)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
@@ -126,7 +126,7 @@ class Ui_wg_BlenderRender(object):
 
         self.horizontalLayout.addWidget(self.label_3)
 
-        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        self.horizontalSpacer_2 = QSpacerItem(20, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout.addItem(self.horizontalSpacer_2)
 
@@ -136,82 +136,20 @@ class Ui_wg_BlenderRender(object):
 
         self.horizontalLayout.addWidget(self.cb_rangeType)
 
-
-        self.verticalLayout_2.addWidget(self.f_range)
-
-        self.w_frameRangeValues = QWidget(self.gb_BlenderRender)
+        self.w_frameRangeValues = QWidget(self.f_range)
         self.w_frameRangeValues.setObjectName(u"w_frameRangeValues")
         self.gridLayout = QGridLayout(self.w_frameRangeValues)
         self.gridLayout.setObjectName(u"gridLayout")
         self.gridLayout.setContentsMargins(9, 0, 9, 0)
-        self.l_rangeStart = QLabel(self.w_frameRangeValues)
-        self.l_rangeStart.setObjectName(u"l_rangeStart")
-        self.l_rangeStart.setMinimumSize(QSize(30, 0))
-        self.l_rangeStart.setFrameShape(QFrame.Shape.NoFrame)
-        self.l_rangeStart.setFrameShadow(QFrame.Shadow.Plain)
-        self.l_rangeStart.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
+        self.horizontalSpacer_4 = QSpacerItem(20, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
 
-        self.gridLayout.addWidget(self.l_rangeStart, 0, 5, 1, 1)
+        self.gridLayout.addItem(self.horizontalSpacer_4, 0, 8, 1, 1)
 
-        self.sp_rangeStart = QSpinBox(self.w_frameRangeValues)
-        self.sp_rangeStart.setObjectName(u"sp_rangeStart")
-        self.sp_rangeStart.setMaximumSize(QSize(55, 16777215))
-        self.sp_rangeStart.setMaximum(99999)
-        self.sp_rangeStart.setValue(1001)
-
-        self.gridLayout.addWidget(self.sp_rangeStart, 0, 6, 1, 1)
-
-        self.horizontalSpacer_44 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.gridLayout.addItem(self.horizontalSpacer_44, 0, 13, 1, 1)
-
-        self.l_rangeEndInfo = QLabel(self.w_frameRangeValues)
-        self.l_rangeEndInfo.setObjectName(u"l_rangeEndInfo")
-
-        self.gridLayout.addWidget(self.l_rangeEndInfo, 0, 8, 1, 1)
-
-        self.sp_rangeEnd = QSpinBox(self.w_frameRangeValues)
-        self.sp_rangeEnd.setObjectName(u"sp_rangeEnd")
-        self.sp_rangeEnd.setMaximumSize(QSize(55, 16777215))
-        self.sp_rangeEnd.setMaximum(99999)
-        self.sp_rangeEnd.setValue(1100)
-
-        self.gridLayout.addWidget(self.sp_rangeEnd, 0, 10, 1, 1)
-
-        self.horizontalSpacer_43 = QSpacerItem(80, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.gridLayout.addItem(self.horizontalSpacer_43, 0, 0, 1, 1)
-
-        self.l_rangeEnd = QLabel(self.w_frameRangeValues)
-        self.l_rangeEnd.setObjectName(u"l_rangeEnd")
-        self.l_rangeEnd.setMinimumSize(QSize(30, 0))
-        self.l_rangeEnd.setFrameShape(QFrame.Shape.NoFrame)
-        self.l_rangeEnd.setFrameShadow(QFrame.Shadow.Plain)
-        self.l_rangeEnd.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
-
-        self.gridLayout.addWidget(self.l_rangeEnd, 0, 9, 1, 1)
-
-        self.l_rangeStartInfo = QLabel(self.w_frameRangeValues)
-        self.l_rangeStartInfo.setObjectName(u"l_rangeStartInfo")
-
-        self.gridLayout.addWidget(self.l_rangeStartInfo, 0, 1, 1, 1)
-
-        self.horizontalSpacer_13 = QSpacerItem(20, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.gridLayout.addItem(self.horizontalSpacer_13, 0, 7, 1, 1)
-
-
-        self.verticalLayout_2.addWidget(self.w_frameRangeValues)
-
-        self.w_fml = QFrame(self.gb_BlenderRender)
+        self.w_fml = QFrame(self.w_frameRangeValues)
         self.w_fml.setObjectName(u"w_fml")
         self.f_fml = QHBoxLayout(self.w_fml)
         self.f_fml.setObjectName(u"f_fml")
         self.f_fml.setContentsMargins(9, 0, 9, 0)
-        self.horizontalSpacer_4 = QSpacerItem(40, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
-
-        self.f_fml.addItem(self.horizontalSpacer_4)
-
         self.l_fml = QLabel(self.w_fml)
         self.l_fml.setObjectName(u"l_fml")
 
@@ -230,14 +168,41 @@ class Ui_wg_BlenderRender(object):
 
         self.f_fml.addWidget(self.e_fml)
 
-        self.horizontalSpacer_10 = QSpacerItem(40, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
 
-        self.f_fml.addItem(self.horizontalSpacer_10)
+        self.gridLayout.addWidget(self.w_fml, 0, 14, 1, 1)
 
+        self.l_rangeEndInfo = QLabel(self.w_frameRangeValues)
+        self.l_rangeEndInfo.setObjectName(u"l_rangeEndInfo")
 
-        self.verticalLayout_2.addWidget(self.w_fml)
+        self.gridLayout.addWidget(self.l_rangeEndInfo, 0, 9, 1, 1)
 
-        self.w_frameExpression = QWidget(self.gb_BlenderRender)
+        self.horizontalSpacer_13 = QSpacerItem(20, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.gridLayout.addItem(self.horizontalSpacer_13, 0, 7, 1, 1)
+
+        self.l_rangeStartInfo = QLabel(self.w_frameRangeValues)
+        self.l_rangeStartInfo.setObjectName(u"l_rangeStartInfo")
+
+        self.gridLayout.addWidget(self.l_rangeStartInfo, 0, 1, 1, 1)
+
+        self.l_rangeEnd = QLabel(self.w_frameRangeValues)
+        self.l_rangeEnd.setObjectName(u"l_rangeEnd")
+        self.l_rangeEnd.setMinimumSize(QSize(30, 0))
+        self.l_rangeEnd.setFrameShape(QFrame.Shape.NoFrame)
+        self.l_rangeEnd.setFrameShadow(QFrame.Shadow.Plain)
+        self.l_rangeEnd.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
+
+        self.gridLayout.addWidget(self.l_rangeEnd, 0, 10, 1, 1)
+
+        self.sp_rangeStart = QSpinBox(self.w_frameRangeValues)
+        self.sp_rangeStart.setObjectName(u"sp_rangeStart")
+        self.sp_rangeStart.setMaximumSize(QSize(55, 16777215))
+        self.sp_rangeStart.setMaximum(99999)
+        self.sp_rangeStart.setValue(1001)
+
+        self.gridLayout.addWidget(self.sp_rangeStart, 0, 6, 1, 1)
+
+        self.w_frameExpression = QWidget(self.w_frameRangeValues)
         self.w_frameExpression.setObjectName(u"w_frameExpression")
         self.horizontalLayout_15 = QHBoxLayout(self.w_frameExpression)
         self.horizontalLayout_15.setSpacing(6)
@@ -248,10 +213,6 @@ class Ui_wg_BlenderRender(object):
 
         self.horizontalLayout_15.addWidget(self.l_frameExpression)
 
-        self.horizontalSpacer_14 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_15.addItem(self.horizontalSpacer_14)
-
         self.le_frameExpression = QLineEdit(self.w_frameExpression)
         self.le_frameExpression.setObjectName(u"le_frameExpression")
         self.le_frameExpression.setMinimumSize(QSize(150, 0))
@@ -259,7 +220,34 @@ class Ui_wg_BlenderRender(object):
         self.horizontalLayout_15.addWidget(self.le_frameExpression)
 
 
-        self.verticalLayout_2.addWidget(self.w_frameExpression)
+        self.gridLayout.addWidget(self.w_frameExpression, 0, 15, 1, 1)
+
+        self.l_rangeStart = QLabel(self.w_frameRangeValues)
+        self.l_rangeStart.setObjectName(u"l_rangeStart")
+        self.l_rangeStart.setMinimumSize(QSize(30, 0))
+        self.l_rangeStart.setFrameShape(QFrame.Shape.NoFrame)
+        self.l_rangeStart.setFrameShadow(QFrame.Shadow.Plain)
+        self.l_rangeStart.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
+
+        self.gridLayout.addWidget(self.l_rangeStart, 0, 5, 1, 1)
+
+        self.sp_rangeEnd = QSpinBox(self.w_frameRangeValues)
+        self.sp_rangeEnd.setObjectName(u"sp_rangeEnd")
+        self.sp_rangeEnd.setMaximumSize(QSize(55, 16777215))
+        self.sp_rangeEnd.setMaximum(99999)
+        self.sp_rangeEnd.setValue(1100)
+
+        self.gridLayout.addWidget(self.sp_rangeEnd, 0, 11, 1, 1)
+
+        self.horizontalSpacer_10 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.gridLayout.addItem(self.horizontalSpacer_10, 0, 0, 1, 1)
+
+
+        self.horizontalLayout.addWidget(self.w_frameRangeValues)
+
+
+        self.verticalLayout_2.addWidget(self.f_range)
 
         self.f_cam = QWidget(self.gb_BlenderRender)
         self.f_cam.setObjectName(u"f_cam")
@@ -527,50 +515,125 @@ class Ui_wg_BlenderRender(object):
         self.gb_outputOptions.setObjectName(u"gb_outputOptions")
         self.verticalLayout_4 = QVBoxLayout(self.gb_outputOptions)
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
-        self.lo_formatting = QHBoxLayout()
-        self.lo_formatting.setObjectName(u"lo_formatting")
-        self.cb_format = QComboBox(self.gb_outputOptions)
+        self.w_formatOptions = QFrame(self.gb_outputOptions)
+        self.w_formatOptions.setObjectName(u"w_formatOptions")
+        self.f_fml_2 = QHBoxLayout(self.w_formatOptions)
+        self.f_fml_2.setObjectName(u"f_fml_2")
+        self.f_fml_2.setContentsMargins(0, 0, 0, 0)
+        self.f_format = QFrame(self.w_formatOptions)
+        self.f_format.setObjectName(u"f_format")
+        self.lo_extention = QVBoxLayout(self.f_format)
+        self.lo_extention.setObjectName(u"lo_extention")
+        self.l_frame = QLabel(self.f_format)
+        self.l_frame.setObjectName(u"l_frame")
+
+        self.lo_extention.addWidget(self.l_frame)
+
+        self.cb_format = QComboBox(self.f_format)
         self.cb_format.setObjectName(u"cb_format")
         self.cb_format.setMinimumSize(QSize(50, 0))
 
-        self.lo_formatting.addWidget(self.cb_format)
+        self.lo_extention.addWidget(self.cb_format)
 
-        self.cb_exrCodec = QComboBox(self.gb_outputOptions)
+
+        self.f_fml_2.addWidget(self.f_format)
+
+        self.f_exrCodec = QFrame(self.w_formatOptions)
+        self.f_exrCodec.setObjectName(u"f_exrCodec")
+        self.lo_exrCodec = QVBoxLayout(self.f_exrCodec)
+        self.lo_exrCodec.setObjectName(u"lo_exrCodec")
+        self.l_exrCodec = QLabel(self.f_exrCodec)
+        self.l_exrCodec.setObjectName(u"l_exrCodec")
+
+        self.lo_exrCodec.addWidget(self.l_exrCodec)
+
+        self.cb_exrCodec = QComboBox(self.f_exrCodec)
         self.cb_exrCodec.setObjectName(u"cb_exrCodec")
         self.cb_exrCodec.setMinimumSize(QSize(50, 0))
 
-        self.lo_formatting.addWidget(self.cb_exrCodec)
+        self.lo_exrCodec.addWidget(self.cb_exrCodec)
 
-        self.sp_pngCompress = QSpinBox(self.gb_outputOptions)
+
+        self.f_fml_2.addWidget(self.f_exrCodec)
+
+        self.f_pngCompress = QFrame(self.w_formatOptions)
+        self.f_pngCompress.setObjectName(u"f_pngCompress")
+        self.lo_pngCompress = QVBoxLayout(self.f_pngCompress)
+        self.lo_pngCompress.setObjectName(u"lo_pngCompress")
+        self.l_pngCompress = QLabel(self.f_pngCompress)
+        self.l_pngCompress.setObjectName(u"l_pngCompress")
+
+        self.lo_pngCompress.addWidget(self.l_pngCompress)
+
+        self.sp_pngCompress = QSpinBox(self.f_pngCompress)
         self.sp_pngCompress.setObjectName(u"sp_pngCompress")
         self.sp_pngCompress.setMaximum(100)
         self.sp_pngCompress.setSingleStep(10)
         self.sp_pngCompress.setValue(50)
 
-        self.lo_formatting.addWidget(self.sp_pngCompress)
+        self.lo_pngCompress.addWidget(self.sp_pngCompress)
 
-        self.sp_jpegQual = QSpinBox(self.gb_outputOptions)
+
+        self.f_fml_2.addWidget(self.f_pngCompress)
+
+        self.f_jpegQual = QFrame(self.w_formatOptions)
+        self.f_jpegQual.setObjectName(u"f_jpegQual")
+        self.lo_jpgQual = QVBoxLayout(self.f_jpegQual)
+        self.lo_jpgQual.setObjectName(u"lo_jpgQual")
+        self.l_jpgQual = QLabel(self.f_jpegQual)
+        self.l_jpgQual.setObjectName(u"l_jpgQual")
+
+        self.lo_jpgQual.addWidget(self.l_jpgQual)
+
+        self.sp_jpegQual = QSpinBox(self.f_jpegQual)
         self.sp_jpegQual.setObjectName(u"sp_jpegQual")
         self.sp_jpegQual.setMaximum(100)
         self.sp_jpegQual.setSingleStep(10)
         self.sp_jpegQual.setValue(50)
 
-        self.lo_formatting.addWidget(self.sp_jpegQual)
+        self.lo_jpgQual.addWidget(self.sp_jpegQual)
 
-        self.cb_exrBitDepth = QComboBox(self.gb_outputOptions)
+
+        self.f_fml_2.addWidget(self.f_jpegQual)
+
+        self.f_exrBitDepth = QFrame(self.w_formatOptions)
+        self.f_exrBitDepth.setObjectName(u"f_exrBitDepth")
+        self.lo_exrBitDepth = QVBoxLayout(self.f_exrBitDepth)
+        self.lo_exrBitDepth.setObjectName(u"lo_exrBitDepth")
+        self.l_exrBitDepth = QLabel(self.f_exrBitDepth)
+        self.l_exrBitDepth.setObjectName(u"l_exrBitDepth")
+
+        self.lo_exrBitDepth.addWidget(self.l_exrBitDepth)
+
+        self.cb_exrBitDepth = QComboBox(self.f_exrBitDepth)
         self.cb_exrBitDepth.setObjectName(u"cb_exrBitDepth")
         self.cb_exrBitDepth.setMinimumSize(QSize(50, 0))
 
-        self.lo_formatting.addWidget(self.cb_exrBitDepth)
+        self.lo_exrBitDepth.addWidget(self.cb_exrBitDepth)
 
-        self.cb_pngBitDepth = QComboBox(self.gb_outputOptions)
+
+        self.f_fml_2.addWidget(self.f_exrBitDepth)
+
+        self.f_pngBitDepth = QFrame(self.w_formatOptions)
+        self.f_pngBitDepth.setObjectName(u"f_pngBitDepth")
+        self.lo_pngBitDepth = QVBoxLayout(self.f_pngBitDepth)
+        self.lo_pngBitDepth.setObjectName(u"lo_pngBitDepth")
+        self.l_pngBitDepth = QLabel(self.f_pngBitDepth)
+        self.l_pngBitDepth.setObjectName(u"l_pngBitDepth")
+
+        self.lo_pngBitDepth.addWidget(self.l_pngBitDepth)
+
+        self.cb_pngBitDepth = QComboBox(self.f_pngBitDepth)
         self.cb_pngBitDepth.setObjectName(u"cb_pngBitDepth")
         self.cb_pngBitDepth.setMinimumSize(QSize(50, 0))
 
-        self.lo_formatting.addWidget(self.cb_pngBitDepth)
+        self.lo_pngBitDepth.addWidget(self.cb_pngBitDepth)
 
 
-        self.verticalLayout_4.addLayout(self.lo_formatting)
+        self.f_fml_2.addWidget(self.f_pngBitDepth)
+
+
+        self.verticalLayout_4.addWidget(self.w_formatOptions)
 
         self.f_midPanelLwr = QHBoxLayout()
         self.f_midPanelLwr.setObjectName(u"f_midPanelLwr")
@@ -581,17 +644,29 @@ class Ui_wg_BlenderRender(object):
 
         self.f_midPanelLwr.addWidget(self.chb_compositor)
 
+        self.horizontalSpacer_15 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.f_midPanelLwr.addItem(self.horizontalSpacer_15)
+
         self.chb_alpha = QCheckBox(self.gb_outputOptions)
         self.chb_alpha.setObjectName(u"chb_alpha")
         self.chb_alpha.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
 
         self.f_midPanelLwr.addWidget(self.chb_alpha)
 
+        self.horizontalSpacer_29 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.f_midPanelLwr.addItem(self.horizontalSpacer_29)
+
         self.chb_persData = QCheckBox(self.gb_outputOptions)
         self.chb_persData.setObjectName(u"chb_persData")
         self.chb_persData.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
 
         self.f_midPanelLwr.addWidget(self.chb_persData)
+
+        self.horizontalSpacer_30 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.f_midPanelLwr.addItem(self.horizontalSpacer_30)
 
 
         self.verticalLayout_4.addLayout(self.f_midPanelLwr)
@@ -1004,7 +1079,7 @@ class Ui_wg_BlenderRender(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 454, 69))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 1073, 69))
         self.verticalLayout_3 = QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.l_pathLast = QLabel(self.scrollAreaWidgetContents)
@@ -1077,12 +1152,12 @@ class Ui_wg_BlenderRender(object):
         self.l_context.setText("")
         self.b_context.setText(QCoreApplication.translate("wg_BlenderRender", u"Select", None))
         self.label_3.setText(QCoreApplication.translate("wg_BlenderRender", u"Framerange:", None))
-        self.l_rangeStart.setText(QCoreApplication.translate("wg_BlenderRender", u"1001", None))
-        self.l_rangeEndInfo.setText(QCoreApplication.translate("wg_BlenderRender", u"End:", None))
-        self.l_rangeEnd.setText(QCoreApplication.translate("wg_BlenderRender", u"1100", None))
-        self.l_rangeStartInfo.setText(QCoreApplication.translate("wg_BlenderRender", u"Start:", None))
         self.l_fml.setText(QCoreApplication.translate("wg_BlenderRender", u"Frames:  ", None))
+        self.l_rangeEndInfo.setText(QCoreApplication.translate("wg_BlenderRender", u"End:", None))
+        self.l_rangeStartInfo.setText(QCoreApplication.translate("wg_BlenderRender", u"Start:", None))
+        self.l_rangeEnd.setText(QCoreApplication.translate("wg_BlenderRender", u"1100", None))
         self.l_frameExpression.setText(QCoreApplication.translate("wg_BlenderRender", u"Frame expression:", None))
+        self.l_rangeStart.setText(QCoreApplication.translate("wg_BlenderRender", u"1001", None))
         self.label.setText(QCoreApplication.translate("wg_BlenderRender", u"Camera:", None))
         self.l_scaling.setText(QCoreApplication.translate("wg_BlenderRender", u"Scaling %:  ", None))
         self.l_Xtext.setText(QCoreApplication.translate("wg_BlenderRender", u" x ", None))
@@ -1098,6 +1173,12 @@ class Ui_wg_BlenderRender(object):
         self.chb_overrideLayers.setText(QCoreApplication.translate("wg_BlenderRender", u"override", None))
         self.b_refreshLayers.setText("")
         self.gb_outputOptions.setTitle(QCoreApplication.translate("wg_BlenderRender", u"Output Options", None))
+        self.l_frame.setText(QCoreApplication.translate("wg_BlenderRender", u"Format", None))
+        self.l_exrCodec.setText(QCoreApplication.translate("wg_BlenderRender", u"Codec", None))
+        self.l_pngCompress.setText(QCoreApplication.translate("wg_BlenderRender", u"Compression", None))
+        self.l_jpgQual.setText(QCoreApplication.translate("wg_BlenderRender", u"Quality", None))
+        self.l_exrBitDepth.setText(QCoreApplication.translate("wg_BlenderRender", u"Bit Depth", None))
+        self.l_pngBitDepth.setText(QCoreApplication.translate("wg_BlenderRender", u"Bit Depth", None))
         self.chb_compositor.setText(QCoreApplication.translate("wg_BlenderRender", u"Compositor:  ", None))
         self.chb_alpha.setText(QCoreApplication.translate("wg_BlenderRender", u"Alpha:  ", None))
         self.chb_persData.setText(QCoreApplication.translate("wg_BlenderRender", u"Persistent Data:", None))
@@ -1131,5 +1212,4 @@ class Ui_wg_BlenderRender(object):
         self.l_pathLast.setText(QCoreApplication.translate("wg_BlenderRender", u"None", None))
         self.b_pathLast.setText(QCoreApplication.translate("wg_BlenderRender", u"...", None))
     # retranslateUi
-
 
