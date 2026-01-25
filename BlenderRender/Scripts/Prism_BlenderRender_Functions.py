@@ -544,13 +544,20 @@ class Prism_BlenderRender_Functions(object):
             os.makedirs(os.path.dirname(aovPath))
 
         #   Set Image Output Settings
+        if not enablePasses:
+            exrCodec = rSettings["exrCodec"]
+            exrBitDepth = rSettings["exrBitDepth"]
+        else:
+            exrCodec = defaults["codec"]
+            exrBitDepth = "16" if defaults["bitdepth"] == "16 (Half Float)" else "32"
+
         bpy.context.scene.render.image_settings.media_type = imageType
         bpy.context.scene.render.filepath = aovPath
 
         if imageFormat == ".exr":
             bpy.context.scene.render.image_settings.file_format =  blendImageFormat
-            bpy.context.scene.render.image_settings.exr_codec = rSettings["exrCodec"]
-            bpy.context.scene.render.image_settings.color_depth = rSettings["exrBitDepth"]
+            bpy.context.scene.render.image_settings.exr_codec = exrCodec
+            bpy.context.scene.render.image_settings.color_depth = exrBitDepth
             bpy.context.scene.render.image_settings.color_mode = alpha
 
             if rSettings["ovrColorspace"] is True:
@@ -618,7 +625,6 @@ class Prism_BlenderRender_Functions(object):
 
                 if "area" in ctx:
                     ctx.pop("area")
-
                 
             if rSettings["startFrame"] is None:
                 frameChunks = [[x, x] for x in rSettings["frames"]]
@@ -750,7 +756,7 @@ class Prism_BlenderRender_Functions(object):
         if "orig_filePath" in rSettings:
             bpy.context.scene.render.filepath = rSettings["orig_filePath"]
 
-        #   Revert Overrided Colorspace to original
+        #   Revert Override Colorspace to original
             if "orig_colorspace" in rSettings:   
                 try:
                     #   Try to restore to original
@@ -964,7 +970,7 @@ class Prism_BlenderRender_Functions(object):
                         disabledLayers.add(vl.name)
                         vl.use = False
                     else:
-                        vl.use = True         
+                        vl.use = True
 
                     tempLayers[vl.name] = vl.use            
 

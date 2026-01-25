@@ -445,7 +445,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
 
         self.setupFormatOptions(mode="Load")                                
 
-        if "codec" in data:                                                 
+        if "codec" in data:                                                  
             idx = self.cb_exrCodec.findText(data["codec"])
             if idx != -1:
                 self.cb_exrCodec.setCurrentIndex(idx)
@@ -1458,8 +1458,6 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
                     if i.column() == 0:
                         self.core.appPlugin.sm_render_addRenderPass(
                             self, passName=i.text(), steps=steps, renderLayer=layer)
-
-
 
         self.updateUi()
         self.stateManager.saveStatesToScene()
