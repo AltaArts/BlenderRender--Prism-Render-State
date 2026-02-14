@@ -9,9 +9,11 @@ https://prism-pipeline.com/
 
 <br/>
 
-**Tested working up to Prism 2.0.16 (with below note)**
+## **Release Versions**
 
-**-- There is an issue with Prism 2.0.15: there is an error in the Blender plugin that affected the default ImageRender state and this plugin.  There is a patch file on the Prism Discord, and will be fixed in the next Prism update.**
+For Blender 4.x and Prism 2.0.x, use BlenderRender release version 1.7
+
+For Blender 5.x and Prism 2.1.x, use BlenderRender version 2.x (in progress)
 
 <br/>
 
