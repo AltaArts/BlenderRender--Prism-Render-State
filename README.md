@@ -15,6 +15,8 @@ For Blender 4.x and Prism 2.0.x, use BlenderRender release version 1.7
 
 For Blender 5.x and Prism 2.1.x, use BlenderRender version 2.x (in progress)
 
+ - NOTE: Docs still show version 1.7
+
 <br/>
 
 ![Overview](https://github.com/user-attachments/assets/86d953bf-729c-4d3e-aa44-7af7a921391c)
