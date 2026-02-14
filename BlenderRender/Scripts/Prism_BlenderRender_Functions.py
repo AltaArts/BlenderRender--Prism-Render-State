@@ -756,7 +756,7 @@ class Prism_BlenderRender_Functions(object):
         if "orig_filePath" in rSettings:
             bpy.context.scene.render.filepath = rSettings["orig_filePath"]
 
-        #   Revert Override Colorspace to original
+        #   Revert Overrided Colorspace to original
             if "orig_colorspace" in rSettings:   
                 try:
                     #   Try to restore to original
@@ -823,7 +823,13 @@ class Prism_BlenderRender_Functions(object):
 
         dlParams["jobInfos"]["Plugin"] = "Blender"
         dlParams["jobInfos"]["Comment"] = "Prism-Submission-BlenderRender"
-        dlParams["pluginInfos"]["OutputFile"] = dlParams["jobInfos"]["OutputFilename0"]
+
+        #   Fix Filename for Farm (remove extension)
+        origFilename = dlParams["jobInfos"]["OutputFilename0"]
+        farmFilename, ext = os.path.splitext(origFilename)
+        farmFilename = f"{farmFilename}_"
+        dlParams["jobInfos"]["OutputFilename0"] = farmFilename
+        dlParams["pluginInfos"]["OutputFile"] = farmFilename
 
 
 #############################################################
@@ -1355,15 +1361,18 @@ class Prism_BlenderRender_Functions(object):
 
     @err_catcher(name=__name__)
     def getOutputPathData(self, aovName:str, rSettings:dict, useVersion:str="next") -> dict:
+        singleFrame = rSettings["rangeType"] == "Single Frame"
+        framePadding = ("#" * self.core.framePadding if not singleFrame else "")
+
         aovData = self.core.mediaProducts.generateMediaProductPath(
             entity=rSettings,
             task=rSettings["identifier"],
             extension=rSettings["imageFormat"],
-            framePadding="",
+            framePadding=framePadding,
             version=useVersion if useVersion != "next" else None,
             location=rSettings["location"],
             aov=aovName,
-            # singleFrame=singleFrame,
+            singleFrame=singleFrame,
             returnDetails=True,
             mediaType="3drenders",
         )
