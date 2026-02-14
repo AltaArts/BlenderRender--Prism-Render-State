@@ -1684,7 +1684,6 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
                         + " - error - %s" % res.get("details", "preRender hook returned False")
                         ]
 
-
             self.core.saveScene(versionUp=False, prismReq=False)
 
             #   Execute Farm Render Job

@@ -825,23 +825,23 @@ class Prism_BlenderRender_Functions(object):
 
     @err_catcher(name=__name__)
     def sm_render_getDeadlineParams(self, origin, dlParams, homeDir):
-        dlParams["jobInfoFile"] = os.path.join(
-            homeDir, "temp", "blender_submit_info.job"
-            )
-        dlParams["pluginInfoFile"] = os.path.join(
-            homeDir, "temp", "blender_plugin_info.job"
-            )
+        dlParams["jobInfoFile"] = os.path.join(homeDir, "temp", "blender_submit_info.job")
+        dlParams["pluginInfoFile"] = os.path.join(homeDir, "temp", "blender_plugin_info.job")
 
         dlParams["jobInfos"]["Plugin"] = "Blender"
         dlParams["jobInfos"]["Comment"] = "Prism-Submission-BlenderRender"
 
-        #   Fix Filename for Farm Single Still Render (remove extension)
-        origFilename = dlParams["jobInfos"]["OutputFilename0"]
-        farmFilename, ext = os.path.splitext(origFilename)
-        farmFilename = f"{farmFilename}_"
+        rangeType = dlParams["details"]["rangeType"]
 
-        dlParams["jobInfos"]["OutputFilename0"] = farmFilename
-        dlParams["pluginInfos"]["OutputFile"] = farmFilename
+        #   Fix Filename for Farm Single Still Render (remove extension)
+        if rangeType == "Single Frame":
+            origFilename = dlParams["jobInfos"]["OutputFilename0"]
+            farmFilename, ext = os.path.splitext(origFilename)
+            farmFilename = f"{farmFilename}_"
+
+            dlParams["jobInfos"]["OutputFilename0"] = farmFilename
+            dlParams["pluginInfos"]["OutputFile"] = farmFilename
+
 
 
 #############################################################
