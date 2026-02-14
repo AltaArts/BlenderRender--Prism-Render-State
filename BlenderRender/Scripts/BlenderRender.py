@@ -1629,6 +1629,7 @@ class BlenderRenderClass(QWidget, BlenderRender_ui.Ui_wg_BlenderRender):
             rSettings.update({
                 "identifier": self.getTaskname(),
                 "location": self.cb_outPath.currentText(),
+                "renderCam": self.curCam,
                 "startFrame": startFrame,
                 "endFrame": endFrame,
                 "frames": frames,

@@ -454,6 +454,7 @@ class Prism_BlenderRender_Functions(object):
         ###   Capture Original Blend Settings    ###
         rSettings["orig_width"] = bpy.context.scene.render.resolution_x
         rSettings["orig_height"] = bpy.context.scene.render.resolution_y
+        rSettings["orig_camera"] = bpy.context.scene.camera
         rSettings["orig_start"] = bpy.context.scene.frame_start
         rSettings["orig_end"] = bpy.context.scene.frame_end
         rSettings["orig_filePath"] = bpy.context.scene.render.filepath
@@ -474,14 +475,21 @@ class Prism_BlenderRender_Functions(object):
         rSettings["orig_useComp"] = bpy.context.scene.render.use_compositing
 
         ###   Configure State Settings to Blend   ###
+
+        #   File Options
+        bpy.context.scene.render.use_overwrite = True
+        bpy.context.scene.render.use_file_extension = True
+
+        #   Resolution
         bpy.context.scene.render.resolution_percentage = int(rSettings["scaling"])
         if origin.chb_resOverride.isChecked():
             bpy.context.scene.render.resolution_x = origin.sp_resWidth.value()
             bpy.context.scene.render.resolution_y = origin.sp_resHeight.value()
         
-        bpy.context.scene.render.use_overwrite = True
-        bpy.context.scene.render.use_file_extension = True
+        #   Render Camera
+        bpy.context.scene.camera = bpy.context.scene.objects[rSettings["renderCam"]]
 
+        #   Render Options
         self.useCompositor(command="set", useComp=rSettings["useComp"])
         self.getPersistentData(command="set", usePD=rSettings["persData"])
         self.getRenderSamples(command="set", samples=int(rSettings["renderSamples"]))
@@ -701,6 +709,9 @@ class Prism_BlenderRender_Functions(object):
         if "orig_height" in rSettings:
             bpy.context.scene.render.resolution_y = rSettings["orig_height"]
 
+        if "orig_camera" in rSettings:
+            bpy.context.scene.camera = rSettings["orig_camera"]
+
         if "orig_start" in rSettings:
             bpy.context.scene.frame_start = rSettings["orig_start"]
 
@@ -824,10 +835,11 @@ class Prism_BlenderRender_Functions(object):
         dlParams["jobInfos"]["Plugin"] = "Blender"
         dlParams["jobInfos"]["Comment"] = "Prism-Submission-BlenderRender"
 
-        #   Fix Filename for Farm (remove extension)
+        #   Fix Filename for Farm Single Still Render (remove extension)
         origFilename = dlParams["jobInfos"]["OutputFilename0"]
         farmFilename, ext = os.path.splitext(origFilename)
         farmFilename = f"{farmFilename}_"
+
         dlParams["jobInfos"]["OutputFilename0"] = farmFilename
         dlParams["pluginInfos"]["OutputFile"] = farmFilename
 
